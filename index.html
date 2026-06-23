@@ -119,8 +119,20 @@
   .ha .card li{display:flex;gap:10px;font-size:14px;color:var(--muted)}
   .ha .card li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:8px;flex:none}
 
+  /* FLYWHEEL */
+  .flow{display:flex;align-items:stretch;gap:0;background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line-2);border-radius:18px;overflow:hidden}
+  .flow .stage{flex:1;padding:26px 22px;border-right:1px solid var(--line);position:relative}
+  .flow .stage:last-child{border-right:none}
+  .flow .stage .si{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:19px;background:rgba(91,140,255,.12);border:1px solid rgba(91,140,255,.28);margin-bottom:16px}
+  .flow .stage .sn{font-family:var(--mono);font-size:11px;color:var(--muted-2);letter-spacing:.08em;margin-bottom:6px}
+  .flow .stage h3{font-size:16px;margin-bottom:8px}
+  .flow .stage p{color:var(--muted);font-size:13.5px}
+  .flow .stage .arrow{position:absolute;right:-11px;top:50%;transform:translateY(-50%);z-index:2;width:22px;height:22px;border-radius:50%;background:var(--bg-2);border:1px solid var(--line-2);display:grid;place-items:center;color:var(--accent);font-size:12px}
+  .loop-back{margin-top:14px;text-align:center;font-family:var(--mono);font-size:12.5px;color:var(--accent-2)}
+  .loop-back span{display:inline-flex;align-items:center;gap:8px;border:1px dashed rgba(55,214,179,.35);border-radius:999px;padding:8px 16px;background:rgba(55,214,179,.05)}
+
   /* WEDGE / sequence */
-  .seq{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--panel);border:1px solid var(--line-2);border-radius:16px;overflow:hidden}
+  .seq{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:var(--panel);border:1px solid var(--line-2);border-radius:16px;overflow:hidden}
   .seq .phase{padding:26px;border-right:1px solid var(--line)}
   .seq .phase:last-child{border-right:none}
   .seq .ph-n{font-family:var(--mono);font-size:12px;color:var(--accent-2);margin-bottom:12px}
@@ -165,6 +177,7 @@
       <a href="#today">The reality</a>
       <a href="#idea">The rail</a>
       <a href="#attribution">Attribution</a>
+      <a href="#flywheel">The flywheel</a>
       <a href="#sequence">Where to start</a>
       <a href="#bets">What has to be true</a>
     </nav>
@@ -366,6 +379,47 @@
   </div>
 </section>
 
+<!-- FLYWHEEL -->
+<section id="flywheel">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Why it compounds</p>
+      <h2>Attribution isn't the destination. It's the first turn of a flywheel.</h2>
+      <p>Every step that runs on the rail records how work <i>actually</i> flows across the tribes. That data lets you see the real process, generate a better one and run it, then automate the routine lanes — which produces more data, and tightens the loop. Most tools can observe <i>or</i> act. Owning the rail means you do both.</p>
+    </div>
+    <div class="flow">
+      <div class="stage">
+        <div class="si">🏷️</div>
+        <div class="sn">01 · INSTRUMENT</div>
+        <h3>Tag every step</h3>
+        <p>As processes run on the rail, each event is attributed at the source — actor, product, income stream.</p>
+        <div class="arrow">→</div>
+      </div>
+      <div class="stage">
+        <div class="si">📊</div>
+        <div class="sn">02 · SEE</div>
+        <h3>Analytics reveal the truth</h3>
+        <p>The data shows the real process — where it stalls, branches and gets re-keyed — not the one in the manual.</p>
+        <div class="arrow">→</div>
+      </div>
+      <div class="stage">
+        <div class="si">✨</div>
+        <div class="sn">03 · GENERATE</div>
+        <h3>Generate the process</h3>
+        <p>Propose the standardized, optimized process from the data — and deploy it straight back onto the rail.</p>
+        <div class="arrow">→</div>
+      </div>
+      <div class="stage">
+        <div class="si">🤖</div>
+        <div class="sn">04 · AUTOMATE</div>
+        <h3>Hand middle office to agents</h3>
+        <p>Reconciliation, confirmations, exceptions — high-volume, rules-heavy, internal. The right first lanes to automate, safely.</p>
+      </div>
+    </div>
+    <div class="loop-back"><span>⟳ &nbsp;more processes on the rail → more data → better generated processes → more automation</span></div>
+  </div>
+</section>
+
 <!-- SEQUENCE / WEDGE -->
 <section id="sequence">
   <div class="wrap">
@@ -382,13 +436,18 @@
       </div>
       <div class="phase">
         <div class="ph-n">PHASE 2 · NEXT</div>
-        <h3>The rail emerges</h3>
-        <p>The events you tagged become a shared thread. Model the process as swimlanes on top of it, so it lives on the rail instead of one tribe's app. Connect the second tribe.</p>
+        <h3>The rail &amp; the analytics</h3>
+        <p>The tagged events become a shared thread and an analytics layer. Model the process as swimlanes on top of it so it lives on the rail, not one tribe's app — and start seeing the real process.</p>
       </div>
       <div class="phase">
-        <div class="ph-n">PHASE 3 · LATER</div>
-        <h3>Agents where they help</h3>
-        <p>With processes on the rail and every step attributed and governed, hand individual lane steps to agents — safely, reversibly, one at a time.</p>
+        <div class="ph-n">PHASE 3 · THEN</div>
+        <h3>Generate processes</h3>
+        <p>With enough coverage, generate the standardized process from the data and deploy it back onto the rail. The platform stops describing work and starts shaping it.</p>
+      </div>
+      <div class="phase">
+        <div class="ph-n">PHASE 4 · LATER</div>
+        <h3>Automate middle office</h3>
+        <p>Hand the routine, internal, high-volume lanes to agents — attributed, governed and reversible by default, one lane at a time.</p>
       </div>
     </div>
   </div>
@@ -413,7 +472,7 @@
       </div>
       <div class="bet">
         <span class="badge">MOAT</span>
-        <div><h3>This is not "just Camunda plus a data warehouse."</h3><p>BPM, iPaaS and process-mining tools each own a piece. The defensible idea is fusing process-execution and attribution into one rail so lineage is automatic. That fusion — not any single feature — has to be the moat.</p></div>
+        <div><h3>The moat is the closed loop, not a feature.</h3><p>Mining tools observe but can't act; workflow tools act but don't observe the truth. Owning the rail means you do both — observe the real process, generate a better one, run it, observe again. That loop, fed by proprietary cross-tribe data, is what no single incumbent can copy.</p></div>
       </div>
       <div class="bet">
         <span class="badge">ADOPTION</span>
