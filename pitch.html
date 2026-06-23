@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Executive brief — Building an agent-ready bank</title>
+<meta name="description" content="A brief for the CEO: agent-ready banks will be worth more. Here is the value, the de-risked plan, and the ask." />
+<style>
+  :root{
+    --bg:#0a0d14; --bg-2:#0e121c; --panel:#11161f; --panel-2:#141b26;
+    --line:#1e2633; --line-2:#2a3545; --text:#e7ecf3; --muted:#93a0b4; --muted-2:#6b7889;
+    --accent:#5b8cff; --accent-2:#37d6b3; --warn:#ffb454; --danger:#ff7a7a; --gold:#e9c46a;
+    --radius:14px; --maxw:1040px;
+    --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-2);font-weight:600;margin:0 0 14px}
+  h1,h2,h3{margin:0;line-height:1.13;letter-spacing:-.02em;font-weight:700}
+  p{margin:0}
+  .muted{color:var(--muted)}
+  .todo{font-family:var(--mono);font-size:.86em;color:var(--gold);background:rgba(233,196,106,.1);border:1px dashed rgba(233,196,106,.4);border-radius:6px;padding:1px 7px}
+
+  header.nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rgba(10,13,20,.72);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px}
+  .logo .mark{width:25px;height:25px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#06121e;font-weight:800;font-size:14px}
+  .nav-right{font-size:13px;color:var(--muted)}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px;padding:10px 18px;border-radius:10px;border:1px solid transparent;cursor:pointer;transition:transform .12s,background .2s,border-color .2s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn-primary{background:var(--accent);color:#04101f}
+  .btn-ghost{border-color:var(--line-2);color:var(--text);background:transparent}
+
+  .hero{position:relative;padding:84px 0 52px;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;z-index:0;background:radial-gradient(900px 420px at 75% -10%,rgba(91,140,255,.18),transparent 60%),radial-gradient(700px 360px at 10% 6%,rgba(55,214,179,.1),transparent 60%)}
+  .hero .wrap{position:relative;z-index:1}
+  .kicker{display:inline-flex;align-items:center;gap:9px;padding:6px 14px;border-radius:999px;border:1px solid var(--line-2);background:var(--panel);font-size:13px;color:var(--muted);margin-bottom:24px}
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 12px var(--accent-2)}
+  .hero h1{font-size:clamp(32px,5vw,54px);max-width:18ch}
+  .hero h1 .grad{background:linear-gradient(120deg,#9db8ff,#37d6b3);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero .sub{font-size:clamp(16px,2vw,20px);color:var(--muted);max-width:62ch;margin-top:20px}
+  .hero-cta{display:flex;gap:14px;margin-top:30px;flex-wrap:wrap}
+
+  section{padding:72px 0;border-top:1px solid var(--line)}
+  .section-head{max-width:60ch;margin-bottom:38px}
+  .section-head h2{font-size:clamp(25px,3.3vw,38px)}
+  .section-head p{color:var(--muted);font-size:16.5px;margin-top:14px}
+
+  /* EXEC SUMMARY */
+  .tldr{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line-2);border-radius:18px;padding:8px 32px}
+  .tldr .row{display:grid;grid-template-columns:140px 1fr;gap:20px;padding:20px 0;border-bottom:1px solid var(--line);align-items:start}
+  .tldr .row:last-child{border-bottom:none}
+  .tldr .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-2);font-weight:700;padding-top:3px}
+  .tldr .v{font-size:16px}
+  .tldr .v b{color:var(--text)}
+
+  /* VALUE LEVERS */
+  .levers{display:grid;gap:14px}
+  .lever{display:grid;grid-template-columns:200px 1fr 150px;gap:20px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;align-items:center}
+  .lever .name{font-weight:700;font-size:16px}
+  .lever .name span{display:block;font-size:12px;font-weight:600;color:var(--accent-2);margin-top:4px;letter-spacing:.04em}
+  .lever .mech{color:var(--muted);font-size:14.5px}
+  .lever .metric{text-align:right;font-family:var(--mono);font-size:13px}
+  .lever .metric .hard{color:var(--accent-2)}
+  .lever .metric .soft{color:var(--gold)}
+  .lever .metric small{display:block;color:var(--muted-2);font-size:11px;margin-top:4px;letter-spacing:.04em}
+
+  /* MECHANISM */
+  .mech-flow{display:flex;align-items:stretch;gap:0;background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line-2);border-radius:16px;overflow:hidden}
+  .mech-flow .st{flex:1;padding:24px 20px;border-right:1px solid var(--line);position:relative}
+  .mech-flow .st:last-child{border-right:none}
+  .mech-flow .si{font-size:20px;margin-bottom:12px}
+  .mech-flow h3{font-size:15px;margin-bottom:7px}
+  .mech-flow p{color:var(--muted);font-size:13px}
+  .mech-flow .ar{position:absolute;right:-10px;top:50%;transform:translateY(-50%);z-index:2;width:20px;height:20px;border-radius:50%;background:var(--bg-2);border:1px solid var(--line-2);display:grid;place-items:center;color:var(--accent);font-size:11px}
+
+  /* ROI MODEL */
+  .roi{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .roi-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px}
+  .roi-card h3{font-size:16px;margin-bottom:18px}
+  .roi-card .line{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+  .roi-card .line:last-child{border-bottom:none}
+  .roi-card .line span:first-child{color:var(--muted)}
+  .roi-card .line.tot{font-weight:700;color:var(--accent-2)}
+  .roi-note{font-size:12.5px;color:var(--muted-2);margin-top:16px;font-style:italic}
+
+  /* COST OF WAITING / WHY NOW */
+  .cols2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px}
+  .panel h3{font-size:17px;margin-bottom:12px;display:flex;gap:10px;align-items:center}
+  .panel p{color:var(--muted);font-size:14.5px}
+  .panel.warnbox{border-color:rgba(255,122,122,.3);background:rgba(255,122,122,.05)}
+  .panel.warnbox h3{color:var(--danger)}
+  .panel.goodbox{border-color:rgba(55,214,179,.3);background:rgba(55,214,179,.05)}
+  .panel.goodbox h3{color:var(--accent-2)}
+
+  /* PLAN */
+  .plan{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:var(--panel);border:1px solid var(--line-2);border-radius:16px;overflow:hidden}
+  .plan .p{padding:24px;border-right:1px solid var(--line)}
+  .plan .p:last-child{border-right:none}
+  .plan .pn{font-family:var(--mono);font-size:11.5px;color:var(--accent-2);margin-bottom:10px}
+  .plan .p h3{font-size:15.5px;margin-bottom:8px}
+  .plan .p p{color:var(--muted);font-size:13px}
+  .plan .p.first{background:rgba(91,140,255,.06)}
+  .risk-line{margin-top:16px;display:flex;gap:12px;align-items:center;justify-content:center;font-size:13.5px;color:var(--muted);background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:13px}
+  .risk-line b{color:var(--accent-2)}
+
+  /* THE ASK */
+  .ask{background:radial-gradient(700px 300px at 80% 0%,rgba(91,140,255,.16),transparent 60%),var(--panel-2);border:1px solid var(--line-2);border-radius:20px;padding:42px}
+  .ask h2{font-size:clamp(24px,3.2vw,34px);max-width:22ch}
+  .ask .lead{color:var(--muted);font-size:17px;margin-top:14px;max-width:60ch}
+  .ask-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}
+  .ask-item{background:var(--bg-2);border:1px solid var(--line-2);border-radius:12px;padding:20px}
+  .ask-item .ai{font-size:18px;margin-bottom:10px}
+  .ask-item h4{margin:0 0 7px;font-size:15px}
+  .ask-item p{color:var(--muted);font-size:13.5px}
+  .closer{margin-top:26px;font-size:18px;font-weight:600;line-height:1.4}
+  .closer .grad{background:linear-gradient(120deg,#9db8ff,#37d6b3);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  footer{padding:42px 0;border-top:1px solid var(--line);color:var(--muted-2);font-size:13px}
+  .foot-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+
+  @media(max-width:820px){
+    .lever{grid-template-columns:1fr}
+    .lever .metric{text-align:left}
+    .mech-flow{flex-direction:column}
+    .mech-flow .st{border-right:none;border-bottom:1px solid var(--line)}
+    .mech-flow .ar{display:none}
+    .roi,.cols2,.ask-grid{grid-template-columns:1fr}
+    .plan{grid-template-columns:1fr}
+    .plan .p{border-right:none;border-bottom:1px solid var(--line)}
+    .tldr .row{grid-template-columns:1fr;gap:6px}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="logo"><span class="mark">T</span> Throughline</div>
+    <div class="nav-right">Executive brief · prepared for the CEO · confidential</div>
+    <a href="#ask" class="btn btn-primary">The ask</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" style="border-top:none">
+  <div class="wrap">
+    <span class="kicker"><span class="dot"></span> A strategic proposal, not an IT project</span>
+    <h1>Agent-ready banks will be worth more.<br><span class="grad">Let's make ours one of them.</span></h1>
+    <p class="sub">
+      The banks that win the next decade won't just <i>use</i> AI — they'll be built so people and AI agents can run the
+      business on the same rails. That structurally lowers our cost-to-income, sharpens how we allocate capital, and
+      positions us to be valued as a next-generation institution. This brief lays out the value, a plan with almost no
+      downside, and what I'm asking for to lead it.
+    </p>
+    <div class="hero-cta">
+      <a href="#levers" class="btn btn-primary">The value to the bank →</a>
+      <a href="#plan" class="btn btn-ghost">The de-risked plan</a>
+    </div>
+  </div>
+</section>
+
+<!-- TL;DR -->
+<section id="tldr">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">The sixty-second version</p>
+      <h2>If you read nothing else.</h2>
+    </div>
+    <div class="tldr">
+      <div class="row"><div class="k">The gap</div><div class="v">We run on tribes — conventional, digital, finance — each with its own systems. Processes are trapped inside them, and we <b>cannot trace a dollar from disbursement to the income stream it lands in</b>. We are not built for AI agents, and our cost base shows it.</div></div>
+      <div class="row"><div class="k">The move</div><div class="v">Build <b>one rail</b> our processes run on, where every step is attributed at the source. Attribution gives finance the truth today; the same rail makes us <b>agent-ready</b> — so agents can take routine middle-office work tomorrow.</div></div>
+      <div class="row"><div class="k">The prize</div><div class="v">A structurally lower <b>cost-to-income ratio</b>, <b>real operating leverage</b> (grow revenue without growing headcount), sharper <b>capital allocation</b>, and a credible <b>"AI-ready" valuation story</b>.</div></div>
+      <div class="row"><div class="k">The ask</div><div class="v">A <b>90-day, single-product-line proof</b> with a small budget — and a mandate to lead this transformation across the tribes as <b>CIO</b>.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- VALUE LEVERS -->
+<section id="levers">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Why this is a CEO decision</p>
+      <h2>It moves the metrics the bank is valued on.</h2>
+      <p>This isn't about technology for its own sake. Each lever connects directly to enterprise value. The first three are hard math; the last is the narrative that re-rates the bank — real, but treat it as upside.</p>
+    </div>
+    <div class="levers">
+      <div class="lever">
+        <div class="name">Cost-to-income<span>EFFICIENCY</span></div>
+        <div class="mech">Agents absorb middle-office volume — reconciliation, confirmations, exceptions. We process more without adding headcount.</div>
+        <div class="metric"><span class="hard">▼ ratio</span><small>HARD / PROVABLE</small></div>
+      </div>
+      <div class="lever">
+        <div class="name">Operating leverage<span>GROWTH</span></div>
+        <div class="mech">Revenue scales while the cost base stays flat. Margin expands as we grow — the engine analysts reward.</div>
+        <div class="metric"><span class="hard">▲ margin</span><small>HARD</small></div>
+      </div>
+      <div class="lever">
+        <div class="name">Return on equity<span>CAPITAL</span></div>
+        <div class="mech">Attribution shows true earnings by product and income stream. We fund winners, exit losers, and price correctly.</div>
+        <div class="metric"><span class="hard">▲ ROE</span><small>HARD</small></div>
+      </div>
+      <div class="lever">
+        <div class="name">Cost of capital<span>RISK</span></div>
+        <div class="mech">Every agent and human action is attributed, governed and reversible. Cleaner audits, fewer findings, lower op-risk losses.</div>
+        <div class="metric"><span class="hard">▼ risk</span><small>MEDIUM</small></div>
+      </div>
+      <div class="lever">
+        <div class="name">Valuation multiple<span>RE-RATING</span></div>
+        <div class="mech">In 3–5 years, analysts and acquirers will discount banks that can't deploy agents on a stuck cost base. We avoid that discount — and earn the premium.</div>
+        <div class="metric"><span class="soft">▲ multiple</span><small>UPSIDE / NARRATIVE</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MECHANISM -->
+<section id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">How it works, in one line</p>
+      <h2>Attribution first. The rail, the insight, and the agents follow.</h2>
+      <p>We don't boil the ocean. We instrument one flow, earn the data, and let it compound. Each stage stands on its own — and feeds the next.</p>
+    </div>
+    <div class="mech-flow">
+      <div class="st"><div class="si">🏷️</div><h3>Attribute</h3><p>Tag every step of one product line at the source — actor, product, income stream.</p><div class="ar">→</div></div>
+      <div class="st"><div class="si">📊</div><h3>See</h3><p>Finance reads revenue by product and income stream live, instead of rebuilding it monthly.</p><div class="ar">→</div></div>
+      <div class="st"><div class="si">🛤️</div><h3>Connect</h3><p>The tagged events become a shared rail processes run on — across the tribes, not inside one app.</p><div class="ar">→</div></div>
+      <div class="st"><div class="si">🤖</div><h3>Automate</h3><p>Hand routine middle-office lanes to governed agents — attributed and reversible by default.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ROI MODEL -->
+<section id="roi">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">The size of the prize</p>
+      <h2>The math, with our numbers dropped in.</h2>
+      <p>The figures below are placeholders — we replace them with our actuals before this goes to the board. Even conservative inputs make the case.</p>
+    </div>
+    <div class="roi">
+      <div class="roi-card">
+        <h3>Annual value — illustrative</h3>
+        <div class="line"><span>Middle-office FTEs in scope</span><span class="todo">[ N FTEs ]</span></div>
+        <div class="line"><span>Fully-loaded cost / FTE</span><span class="todo">[ $X ]</span></div>
+        <div class="line"><span>Share of work automatable</span><span class="todo">[ 30–50% ]</span></div>
+        <div class="line"><span>Revenue better-allocated via attribution</span><span class="todo">[ $Y ]</span></div>
+        <div class="line tot"><span>Indicative annual value</span><span class="todo">[ $Z ]</span></div>
+      </div>
+      <div class="roi-card">
+        <h3>The cost to find out</h3>
+        <div class="line"><span>90-day proof — one product line</span><span class="todo">[ small ]</span></div>
+        <div class="line"><span>Team for the proof</span><span>a lean, dedicated squad</span></div>
+        <div class="line"><span>Systems replaced</span><span>none — we wrap what we have</span></div>
+        <div class="line"><span>Downside if it fails</span><span>capped at the proof budget</span></div>
+        <div class="line tot"><span>Risk / reward</span><span>asymmetric in our favour</span></div>
+        <p class="roi-note">The point of Phase 1 isn't the savings — it's proof, at trivial cost, that the rail and the attribution work here.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY NOW -->
+<section id="why">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Why now, and the cost of waiting</p>
+      <h2>The capability arrived. The window is the advantage.</h2>
+    </div>
+    <div class="cols2">
+      <div class="panel goodbox">
+        <h3>✓ Why this is the moment</h3>
+        <p>Agents can finally take real, multi-step action reliably. The technology that blocked this for years is no longer the constraint — execution and governance are. Moving now means we define our cost structure before competitors define theirs.</p>
+      </div>
+      <div class="panel warnbox">
+        <h3>✕ The cost of waiting</h3>
+        <p>Every year we don't instrument our processes, the attribution gap widens and the cost base hardens. Competitors who become agent-ready first will out-scale us at lower cost — and the market will price the difference. This is cheaper to start small now than to retrofit later.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLAN -->
+<section id="plan">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">The de-risked plan</p>
+      <h2>Small, sequenced, and reversible — each phase earns the next.</h2>
+      <p>No big-bang transformation, no rip-and-replace. We prove it on one product line, then expand only where the data justifies it.</p>
+    </div>
+    <div class="plan">
+      <div class="p first"><div class="pn">PHASE 1 · 90 DAYS</div><h3>Attribution proof</h3><p>One product line. Live disbursement → income-stream attribution for finance. Small budget, measurable result.</p></div>
+      <div class="p"><div class="pn">PHASE 2</div><h3>The rail &amp; analytics</h3><p>Turn the tagged events into a shared rail and analytics. Bring a second tribe's process onto it.</p></div>
+      <div class="p"><div class="pn">PHASE 3</div><h3>Generate processes</h3><p>Use the data to standardise and improve processes, deployed back onto the rail.</p></div>
+      <div class="p"><div class="pn">PHASE 4</div><h3>Automate middle office</h3><p>Hand routine lanes to governed agents — one at a time, attributed and reversible.</p></div>
+    </div>
+    <div class="risk-line">🛡️ <span>At every phase: <b>no systems replaced</b>, <b>humans keep the judgment calls</b>, and <b>every action is reversible and audited</b>. We can stop after any phase having already banked the value of the last.</span></div>
+  </div>
+</section>
+
+<!-- THE ASK -->
+<section id="ask" style="border-top:none">
+  <div class="wrap">
+    <div class="ask">
+      <p class="eyebrow">The ask</p>
+      <h2>Give me the mandate to build the bank that's ready for what's next.</h2>
+      <p class="lead">This needs one accountable owner with authority across the tribes — not an initiative that lives inside any single one of them. I've architected it end to end. I'm asking to own it.</p>
+      <div class="ask-grid">
+        <div class="ask-item"><div class="ai">①</div><h4>A 90-day proof</h4><p>One product line, a small budget, a lean squad. A measurable attribution result you can see for yourself.</p></div>
+        <div class="ask-item"><div class="ai">②</div><h4>A cross-tribe mandate</h4><p>The authority to instrument processes across conventional, digital and finance — sponsored from the top.</p></div>
+        <div class="ask-item"><div class="ai">③</div><h4>The role to lead it</h4><p>Appoint me <b>CIO</b> to own this transformation — a strategy and execution mandate, accountable directly to you.</p></div>
+      </div>
+      <p class="closer">If the proof works, you'll have a bank that sees itself end to end and scales without scaling cost.<br><span class="grad">If it doesn't, you'll have spent a rounding error to find out. The downside is capped; the upside is the next decade.</span></p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div class="logo"><span class="mark">T</span> Throughline</div>
+    <span>Executive brief · figures marked <span class="todo">[ … ]</span> to be replaced with bank actuals · confidential draft · 2026</span>
+  </div>
+</footer>
+
+</body>
+</html>
