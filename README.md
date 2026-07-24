@@ -49,9 +49,26 @@ Khmer each article shows the concept, a concise overview, and the C-suite lens.
 The chosen language and your "mastered" progress persist in the browser via
 `localStorage`.
 
+## Campaign map
+
+The home screen is a **digital campaign map** — a TRON HUD where the 10 modules
+become 10 **territories** on a winding path:
+
+- **Conquer step by step** — territories unlock in order; study all 10 cards of a
+  territory to plant your **flag** and light up the path to the next one.
+- **Checkpoints (5 & 10)** — these are **boss** territories. After studying their
+  cards you must beat the **Firewall** to conquer them.
+- **The Firewall** — a timed quiz gauntlet: a clue appears and you pick the right
+  concept from four options. Score enough correct answers before your integrity
+  (lives) runs out. It draws from every territory up to that checkpoint, so it
+  doubles as a review. Win to breach the wall and plant your flag.
+
+The map sits beside a compact HUD (daily treasure, streak, mastery) so the daily
+loop and the long campaign live together.
+
 ## Daily game (Zone hub)
 
-The app opens on a personalized **Zone** — a TRON-style hub — before the cards:
+Alongside the map, a personalized daily loop:
 
 - **Personalization** — set a call sign (name) and a daily goal (3 / 5 / 10 cards),
   stored locally and editable any time.

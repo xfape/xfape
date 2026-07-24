@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="LEDGER — a TRON-styled daily banking game: a personalized Zone hub with daily-treasure goals and streaks, plus 100 deep-dive cards in English, Russian, and Khmer.">
+<meta name="description" content="LEDGER — a TRON-styled banking campaign: conquer 10 territories on a digital map, keep daily streaks, and beat the Firewall boss challenges. English, Russian, Khmer.">
 <title>LEDGER — How Banking Works</title>
 <style>*{box-sizing:border-box}html,body{margin:0;padding:0}</style>
 </head>
@@ -675,8 +675,9 @@
     .deck, .article { transition: opacity .2s ease; }
     .exit-left, .exit-right, .enter-left, .enter-right { animation-duration: .001s; }
     .progress i { transition: none; }
-    #zone, .modal-card { animation: none; }
+    #zone, .modal-card, .ch-card { animation: none; }
     #claim-btn.ready { animation: none; }
+    .node.available.current, .node.checkpoint.available.current { animation: none; }
     * { scroll-behavior: auto; }
   }
 
@@ -875,6 +876,122 @@
 
   /* claim celebration layer */
   .zap { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
+
+  /* ================= Campaign map ================= */
+  #zone { flex-direction: column; align-items: stretch; gap: clamp(12px, 2vw, 20px); }
+  .zone-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+  .zone-head .zone-sub { margin-top: 6px; }
+  .zone-main { display: grid; grid-template-columns: 1.4fr .85fr; gap: clamp(14px, 2.6vw, 26px); align-items: stretch; flex: 1; min-height: 0; }
+  @media (max-width: 900px) { .zone-main { grid-template-columns: 1fr; } }
+
+  .map-wrap {
+    position: relative;
+    border: 1px solid rgba(var(--glow), .22);
+    border-radius: var(--r);
+    background: linear-gradient(160deg, rgba(var(--glow), .05), transparent 62%), var(--surface);
+    box-shadow: var(--shadow), 0 0 60px -26px rgba(var(--glow), .5);
+    overflow: hidden;
+    min-height: 540px;
+  }
+  .map-lines { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .map-seg { stroke: rgba(var(--glow), .16); stroke-width: .5; fill: none; }
+  .map-seg.lit { stroke: var(--neon); stroke-width: .8; filter: drop-shadow(0 0 3px rgba(var(--glow), .9)); }
+  .map-nodes { position: absolute; inset: 0; }
+
+  .node {
+    position: absolute; transform: translate(-50%, -50%);
+    width: 60px; height: 60px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(var(--glow), .05);
+    border: 1px solid rgba(var(--glow), .3);
+    color: var(--muted); cursor: pointer;
+    font-family: var(--f-mono); font-weight: 600; font-size: 18px;
+    transition: transform .25s cubic-bezier(.16,1,.3,1), box-shadow .3s, border-color .3s, background .3s, color .3s;
+  }
+  .node .nn { position: relative; z-index: 1; }
+  .node .flag { position: absolute; top: -13px; right: -9px; font-size: 17px; opacity: 0; transform: translateY(6px) scale(.5); transition: all .45s cubic-bezier(.2,1.5,.4,1); }
+  .node .lock { position: absolute; font-size: 14px; opacity: .8; }
+  .node:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 3px; }
+  .node.locked { opacity: .5; cursor: not-allowed; color: var(--faint); }
+  .node.available { color: var(--ink); border-color: rgba(var(--glow), .55); box-shadow: 0 0 22px -6px rgba(var(--glow), .6); }
+  .node.available.current { animation: nodepulse 2.1s ease-in-out infinite; }
+  @keyframes nodepulse { 0%,100% { box-shadow: 0 0 20px -8px rgba(var(--glow), .55); } 50% { box-shadow: 0 0 36px -4px rgba(var(--glow), .95); } }
+  .node.conquered { color: #041016; background: var(--neon); border-color: var(--neon); box-shadow: 0 0 26px -6px rgba(var(--glow), .8); }
+  .node.conquered .flag { opacity: 1; transform: translateY(0) scale(1); }
+  .node:hover:not(.locked) { transform: translate(-50%, -50%) scale(1.09); }
+  .node.checkpoint { width: 74px; height: 74px; border-radius: 20px; border-color: rgba(var(--glow-2), .5); font-size: 20px; }
+  .node.checkpoint.available { box-shadow: 0 0 26px -6px rgba(var(--glow-2), .7); border-color: rgba(var(--glow-2), .75); color: var(--neon-2); }
+  .node.checkpoint.available.current { animation: bosspulse 2.1s ease-in-out infinite; }
+  @keyframes bosspulse { 0%,100% { box-shadow: 0 0 22px -8px rgba(var(--glow-2), .6); } 50% { box-shadow: 0 0 40px -4px rgba(var(--glow-2), 1); } }
+  .node.checkpoint.conquered { background: var(--neon-2); border-color: var(--neon-2); color: #180A02; box-shadow: 0 0 30px -6px rgba(var(--glow-2), .9); }
+  .node .boss { position: absolute; bottom: -17px; font-family: var(--f-mono); font-size: 8px; letter-spacing: .14em; color: var(--neon-2); text-transform: uppercase; white-space: nowrap; }
+
+  .map-legend { position: absolute; left: 50%; transform: translateX(-50%); bottom: 11px; display: flex; gap: 14px; font-family: var(--f-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); background: rgba(var(--glow), .04); border: 1px solid rgba(var(--glow), .14); border-radius: 999px; padding: 5px 12px; }
+  .map-legend span { display: flex; align-items: center; gap: 5px; }
+  .map-legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+  .lg-c { background: var(--neon); }
+  .lg-a { background: transparent; border: 1px solid rgba(var(--glow), .6); }
+  .lg-b { background: var(--neon-2); }
+
+  /* campaign banner (study view) */
+  .campaign-banner {
+    display: none; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+    border: 1px solid rgba(var(--glow), .28); border-radius: var(--r-s);
+    background: linear-gradient(160deg, rgba(var(--glow), .07), transparent 72%), var(--surface);
+    box-shadow: 0 0 30px -16px rgba(var(--glow), .5);
+    padding: 10px 16px; margin: 0 auto; width: min(760px, 100%);
+  }
+  #app.view-study.campaign .campaign-banner { display: flex; }
+  .cb-info { display: flex; align-items: center; gap: 13px; flex-wrap: wrap; }
+  .cb-terr { font-family: var(--f-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--neon); }
+  .cb-terr b { color: var(--ink); }
+  .cb-bar { width: 130px; height: 5px; border-radius: 5px; background: rgba(var(--glow), .14); overflow: hidden; }
+  .cb-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--neon), var(--neon-2)); box-shadow: 0 0 8px rgba(var(--glow), .5); transition: width .5s cubic-bezier(.16,1,.3,1); }
+  .cb-prog { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+  #cb-action { display: none; }
+  #cb-action.show { display: inline-flex; }
+
+  /* challenge overlay */
+  .challenge {
+    position: fixed; inset: 0; z-index: 70; display: none; flex-direction: column;
+    align-items: center; justify-content: center; padding: 20px;
+    background: rgba(2,5,10,.86); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  .challenge.open { display: flex; animation: fade .3s ease both; }
+  .ch-card {
+    width: min(560px, 100%);
+    background: linear-gradient(160deg, rgba(var(--glow-2), .07), rgba(var(--glow), .04) 40%, transparent 70%), var(--surface);
+    border: 1px solid rgba(var(--glow-2), .3); border-radius: var(--r);
+    box-shadow: var(--shadow), 0 0 80px -22px rgba(var(--glow-2), .6);
+    padding: clamp(20px, 4vw, 30px); display: flex; flex-direction: column; gap: 15px;
+    animation: enter .4s cubic-bezier(.16,1,.3,1) both;
+  }
+  .ch-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .ch-title { font-family: var(--f-display); font-weight: 600; font-size: 20px; color: var(--ink); }
+  .ch-title b { color: var(--neon-2); }
+  .ch-meta { display: flex; gap: 16px; font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+  .ch-meta b { color: var(--neon); }
+  .ch-timer { height: 4px; border-radius: 4px; background: rgba(var(--glow), .14); overflow: hidden; }
+  .ch-timer i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--neon), var(--neon-2)); transition: width .12s linear; }
+  .ch-clue { font-size: clamp(15px, 2.6vw, 17px); line-height: 1.55; color: var(--ink); }
+  .ch-clue small { display: block; font-family: var(--f-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--neon); margin-bottom: 8px; }
+  .ch-opts { display: grid; gap: 9px; }
+  .ch-opt {
+    text-align: left; font-family: var(--f-body); font-size: 14.5px; color: var(--ink);
+    background: rgba(var(--glow), .05); border: 1px solid rgba(var(--glow), .24);
+    border-radius: var(--r-s); padding: 12px 15px; cursor: pointer;
+    transition: border-color .16s, background .16s, box-shadow .16s;
+  }
+  .ch-opt:hover:not(:disabled) { border-color: rgba(var(--glow), .55); background: rgba(var(--glow), .1); }
+  .ch-opt.correct { border-color: var(--neon); background: rgba(var(--glow), .2); box-shadow: 0 0 22px -6px rgba(var(--glow), .8); color: var(--ink); }
+  .ch-opt.wrong { border-color: #ff5a6a; background: rgba(255,90,106,.14); }
+  .ch-opt:disabled { cursor: default; }
+  .ch-result { text-align: center; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  .ch-result h3 { font-family: var(--f-display); font-weight: 600; font-size: 26px; }
+  .ch-result.win h3 { color: var(--neon); text-shadow: 0 0 22px rgba(var(--glow), .6); }
+  .ch-result.lose h3 { color: #ff5a6a; }
+  .ch-result p { color: var(--muted); font-size: 14px; }
+  .ch-actions { display: flex; gap: 10px; }
 </style>
 
 <div id="app" class="view-zone">
@@ -908,14 +1025,25 @@
   </header>
 
   <section id="zone">
-    <div class="zone-grid">
-      <div class="zone-hero">
-        <div class="zone-eyebrow" id="zone-eyebrow">Daily run</div>
+    <div class="zone-head">
+      <div>
+        <div class="zone-eyebrow" id="zone-eyebrow">Campaign</div>
         <h1 class="zone-greeting"><span id="zone-greet">Welcome,</span> <b id="zone-name">Operator</b></h1>
         <p class="zone-sub" id="zone-sub"></p>
-        <div class="zone-cta">
-          <button class="btn primary big" id="enter-grid">Enter the Grid</button>
-          <button class="btn ghost big" id="edit-profile">Edit profile</button>
+      </div>
+      <div class="zone-cta">
+        <button class="btn primary big" id="enter-grid">Continue</button>
+        <button class="btn ghost big" id="edit-profile">Edit profile</button>
+      </div>
+    </div>
+    <div class="zone-main">
+      <div class="map-wrap" id="map-wrap">
+        <svg class="map-lines" id="map-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div class="map-nodes" id="map-nodes"></div>
+        <div class="map-legend">
+          <span><i class="lg-a"></i><span id="lg-current">Available</span></span>
+          <span><i class="lg-c"></i><span id="lg-conq">Conquered</span></span>
+          <span><i class="lg-b"></i><span id="lg-boss">Checkpoint</span></span>
         </div>
       </div>
       <div class="zone-cards">
@@ -953,6 +1081,15 @@
   </section>
 
   <nav class="filters" id="filters" aria-label="Filter by module"></nav>
+
+  <div class="campaign-banner" id="campaign-banner">
+    <div class="cb-info">
+      <span class="cb-terr" id="cb-terr">Territory <b>01</b></span>
+      <span class="cb-bar"><i id="cb-bar-i"></i></span>
+      <span class="cb-prog" id="cb-prog">0 / 10</span>
+    </div>
+    <button class="btn primary" id="cb-action">Enter the Firewall</button>
+  </div>
 
   <section class="stage">
     <div class="deck" id="deck">
@@ -1041,6 +1178,10 @@
         <button class="btn primary" id="modal-save">Save</button>
       </div>
     </div>
+  </div>
+
+  <div class="challenge" id="challenge" role="dialog" aria-modal="true" aria-label="Challenge">
+    <div class="ch-card" id="ch-card"></div>
   </div>
 </div>
 
@@ -1184,8 +1325,18 @@
     prevAria: "Previous card", nextAria: "Next card", flipAria: "Open the full article",
     readAria: "Open the full article", closeAria: "Close the article",
     markAria: "Mark as mastered", shuffleAria: "Shuffle deck",
-    operator: "Operator", zoneEyebrow: "Daily run", greet: "Welcome,",
-    enterGrid: "Enter the Grid", editProfile: "Edit profile", zoneBtn: "Zone",
+    operator: "Operator", zoneEyebrow: "Campaign", greet: "Welcome,",
+    enterGrid: "Continue", editProfile: "Edit profile", zoneBtn: "Map",
+    territory: "Territory", lgAvailable: "Available", lgConquered: "Conquered", lgCheckpoint: "Checkpoint",
+    cbStudied: "studied", enterFirewall: "Enter the Firewall",
+    subCampaign: "You've secured {done}/{total} territories. Current streak: {streak}.",
+    subCampaign0: "Your campaign begins. Conquer Territory 1 to plant your first flag.",
+    chTitle: "Firewall", chCheckpoint: "Checkpoint",
+    chIntro: "Answer {target} correct before {lives} breaches. The Firewall guards Territory {n}.",
+    chStart: "Breach it", chLives: "Integrity", chScore: "Score", chClue: "Which concept fits?",
+    chWin: "Firewall breached", chLose: "Connection lost",
+    chWinMsg: "Territory {n} conquered — flag planted.", chLoseMsg: "The Firewall held. Regroup and try again.",
+    chRetry: "Retry", chExit: "Exit", chReturn: "Return to map",
     dailyTreasure: "Daily treasure", claim: "Claim treasure", claimed: "Secured today",
     streakLbl: "Streak", daysWord: "days", bestWord: "Best",
     masteryLbl: "Mastery", treasuresLbl: "Treasures",
@@ -1205,8 +1356,18 @@
           secWhat: "Что это такое", secHow: "Как это работает", secExample: "Пример с цифрами", secOverview: "Обзор",
           readAria: "Открыть статью", closeAria: "Закрыть статью", flipAria: "Открыть статью",
           cardAria: "Карточка концепции. Нажмите, чтобы открыть статью.", kbFlip: "читать",
-          operator: "Оператор", zoneEyebrow: "Ежедневный заход", greet: "С возвращением,",
-          enterGrid: "Войти в Сетку", editProfile: "Профиль", zoneBtn: "Зона",
+          operator: "Оператор", zoneEyebrow: "Кампания", greet: "С возвращением,",
+          enterGrid: "Продолжить", editProfile: "Профиль", zoneBtn: "Карта",
+          territory: "Территория", lgAvailable: "Доступно", lgConquered: "Захвачено", lgCheckpoint: "Чекпоинт",
+          cbStudied: "изучено", enterFirewall: "Взломать Файрвол",
+          subCampaign: "Захвачено территорий: {done}/{total}. Текущая серия: {streak}.",
+          subCampaign0: "Кампания началась. Захватите Территорию 1, чтобы поставить первый флаг.",
+          chTitle: "Файрвол", chCheckpoint: "Чекпоинт",
+          chIntro: "Дайте {target} правильных ответов, пока не случится {lives} пробоя. Файрвол охраняет Территорию {n}.",
+          chStart: "Взломать", chLives: "Целостность", chScore: "Счёт", chClue: "Какое понятие подходит?",
+          chWin: "Файрвол взломан", chLose: "Связь потеряна",
+          chWinMsg: "Территория {n} захвачена — флаг установлен.", chLoseMsg: "Файрвол устоял. Перегруппируйтесь и попробуйте снова.",
+          chRetry: "Ещё раз", chExit: "Выход", chReturn: "На карту",
           dailyTreasure: "Ежедневное сокровище", claim: "Забрать сокровище", claimed: "Собрано сегодня",
           streakLbl: "Серия", daysWord: "дн.", bestWord: "Рекорд",
           masteryLbl: "Освоение", treasuresLbl: "Сокровища",
@@ -1222,8 +1383,18 @@
           secWhat: "តើវាជាអ្វី", secHow: "របៀបដំណើរការ", secExample: "ឧទាហរណ៍ជាក់ស្តែង", secOverview: "ទិដ្ឋភាពទូទៅ",
           readAria: "បើកអត្ថបទ", closeAria: "បិទអត្ថបទ", flipAria: "បើកអត្ថបទ",
           cardAria: "កាតគំនិត។ ចុចដើម្បីបើកអត្ថបទ។", kbFlip: "អាន",
-          operator: "អ្នកលេង", zoneEyebrow: "ដំណើរប្រចាំថ្ងៃ", greet: "សូមស្វាគមន៍,",
-          enterGrid: "ចូលទៅ Grid", editProfile: "កែប្រវត្តិរូប", zoneBtn: "តំបន់",
+          operator: "អ្នកលេង", zoneEyebrow: "យុទ្ធនាការ", greet: "សូមស្វាគមន៍,",
+          enterGrid: "បន្ត", editProfile: "កែប្រវត្តិរូប", zoneBtn: "ផែនទី",
+          territory: "តំបន់", lgAvailable: "អាចលេង", lgConquered: "បានដណ្តើម", lgCheckpoint: "ចំណុចត្រួតពិនិត្យ",
+          cbStudied: "បានសិក្សា", enterFirewall: "បំបែក Firewall",
+          subCampaign: "បានដណ្តើមតំបន់ {done}/{total}។ ស្ទ្រីកបច្ចុប្បន្ន៖ {streak}។",
+          subCampaign0: "យុទ្ធនាការចាប់ផ្តើម។ ដណ្តើមតំបន់ទី 1 ដើម្បីបោះទង់ដំបូង។",
+          chTitle: "Firewall", chCheckpoint: "ចំណុចត្រួតពិនិត្យ",
+          chIntro: "ឆ្លើយត្រូវ {target} មុនពេលមានការបំបែក {lives}។ Firewall ការពារតំបន់ទី {n}។",
+          chStart: "បំបែក", chLives: "សុចរិតភាព", chScore: "ពិន្ទុ", chClue: "គំនិតណាត្រឹមត្រូវ?",
+          chWin: "បំបែក Firewall បានសម្រេច", chLose: "បាត់បង់ការតភ្ជាប់",
+          chWinMsg: "តំបន់ទី {n} ត្រូវបានដណ្តើម — បោះទង់រួច។", chLoseMsg: "Firewall នៅតែឈរ។ ព្យាយាមម្តងទៀត។",
+          chRetry: "ម្តងទៀត", chExit: "ចេញ", chReturn: "ត្រឡប់ទៅផែនទី",
           dailyTreasure: "កំណប់ប្រចាំថ្ងៃ", claim: "យកកំណប់", claimed: "បានយករួច",
           streakLbl: "ស្ទ្រីក", daysWord: "ថ្ងៃ", bestWord: "ខ្ពស់បំផុត",
           masteryLbl: "ជំនាញ", treasuresLbl: "កំណប់",
@@ -1323,6 +1494,7 @@
     closeArticle();
     render();
     replayEnter();
+    if (typeof updateBanner === "function") updateBanner();
   }
 
   /* ===================== RENDER ===================== */
@@ -1586,10 +1758,14 @@
 
   function recordStudy(n) {
     const r = dayRec(todayKey());
-    if (!r.studied.includes(n)) {
-      r.studied.push(n);
+    let changed = false;
+    if (!r.studied.includes(n)) { r.studied.push(n); changed = true; }
+    if (Array.isArray(profile.seen) && !profile.seen.includes(n)) { profile.seen.push(n); changed = true; }
+    if (changed) {
       saveProfile();
+      if (typeof checkConquer === "function") checkConquer();
       if (view === "zone") renderZone();
+      else if (typeof updateBanner === "function") updateBanner();
     }
   }
 
@@ -1657,13 +1833,12 @@
     $("mastery-bar").style.width = mastered.size + "%";
     renderWeek();
 
-    // narrative sub-line
-    let sub;
-    if (claimed) sub = uiText("subClaimed");
-    else if (met) sub = uiText("subReady");
-    else if (streak === 0 && done === 0) sub = fmt(uiText("subStreak0"), { goal: goal });
-    else sub = fmt(uiText("subProgress"), { left: Math.max(0, goal - done) });
-    $("zone-sub").textContent = sub;
+    // campaign narrative + map
+    const conq = (typeof conqueredCount === "function") ? conqueredCount() : 0;
+    $("zone-sub").textContent = conq === 0
+      ? uiText("subCampaign0")
+      : fmt(uiText("subCampaign"), { done: conq, total: 10, streak: streak });
+    if (typeof renderMap === "function") renderMap();
   }
 
   function celebrate() {
@@ -1703,8 +1878,8 @@
     view = v;
     app.classList.toggle("view-zone", v === "zone");
     app.classList.toggle("view-study", v === "study");
-    if (v === "study") { resize(); draw(); }
-    if (v === "zone") renderZone();
+    if (v === "study") { resize(); draw(); if (typeof updateBanner === "function") updateBanner(); }
+    if (v === "zone") { app.classList.remove("campaign"); renderZone(); }
   }
 
   /* ----- profile modal ----- */
@@ -1734,7 +1909,7 @@
     renderZone();
   }
 
-  $("enter-grid").addEventListener("click", () => setView("study"));
+  $("enter-grid").addEventListener("click", () => { if (typeof enterNode === "function") enterNode(currentNode()); else setView("study"); });
   $("home-btn").addEventListener("click", () => setView("zone"));
   $("edit-profile").addEventListener("click", openProfile);
   $("claim-btn").addEventListener("click", claimTreasure);
@@ -1749,7 +1924,216 @@
         x.setAttribute("aria-pressed", x === b ? "true" : "false"));
     }));
 
+  /* ===================== CAMPAIGN MAP ===================== */
+  const CATS = cats.slice(1);           // 10 module names, in order
+  const CHECKPOINTS = [5, 10];
+  const NS = "http://www.w3.org/2000/svg";
+  if (!Array.isArray(profile.seen)) profile.seen = [];
+  if (!profile.bosses || typeof profile.bosses !== "object") profile.bosses = {};
+  let activeNode = 1;
+
+  const moduleName = (m) => CATS[m - 1];
+  const moduleCards = (m) => CARDS.filter((c) => c.cat === moduleName(m));
+  const cardModule = (n) => CATS.indexOf(CARDS[n - 1].cat) + 1;
+  const isCheckpoint = (m) => CHECKPOINTS.includes(m);
+  const bossBeaten = (m) => !!profile.bosses[m];
+  function moduleSeenCount(m) {
+    const s = new Set(profile.seen);
+    return moduleCards(m).filter((c) => s.has(c.n)).length;
+  }
+  function conquered(m) {
+    const full = moduleSeenCount(m) >= moduleCards(m).length;
+    return isCheckpoint(m) ? (full && bossBeaten(m)) : full;
+  }
+  const unlocked = (m) => m === 1 || conquered(m - 1);
+  function currentNode() { for (let m = 1; m <= 10; m++) if (!conquered(m)) return m; return 10; }
+  function conqueredCount() { let c = 0; for (let m = 1; m <= 10; m++) if (conquered(m)) c++; return c; }
+
+  const conqueredShown = new Set();
+  for (let m = 1; m <= 10; m++) if (conquered(m)) conqueredShown.add(m);
+
+  function checkConquer() {
+    let newly = false;
+    for (let m = 1; m <= 10; m++) {
+      if (conquered(m) && !conqueredShown.has(m)) { conqueredShown.add(m); newly = true; }
+    }
+    renderMap();
+    if (newly) celebrate();
+  }
+
+  function nodePos(i) {           // i: 0..9 — zig-zag ladder
+    const x = 50 + (i % 2 ? 25 : -25) + 6 * Math.sin(i * 1.25);
+    const y = 6 + i * 8.4;
+    return { x, y };
+  }
+
+  function renderMap() {
+    const nodesEl = $("map-nodes"), svg = $("map-lines");
+    if (!nodesEl || !svg) return;
+    nodesEl.textContent = ""; svg.textContent = "";
+    const cur = currentNode();
+    const pts = []; for (let m = 1; m <= 10; m++) pts.push(nodePos(m - 1));
+    for (let i = 0; i < 9; i++) {
+      const a = pts[i], b = pts[i + 1];
+      const ln = document.createElementNS(NS, "line");
+      ln.setAttribute("x1", a.x); ln.setAttribute("y1", a.y);
+      ln.setAttribute("x2", b.x); ln.setAttribute("y2", b.y);
+      ln.setAttribute("class", "map-seg" + (conquered(i + 1) ? " lit" : ""));
+      svg.appendChild(ln);
+    }
+    for (let m = 1; m <= 10; m++) {
+      const p = pts[m - 1];
+      const btn = document.createElement("button");
+      let cls = "node";
+      if (isCheckpoint(m)) cls += " checkpoint";
+      if (conquered(m)) cls += " conquered";
+      else if (unlocked(m)) { cls += " available"; if (m === cur) cls += " current"; }
+      else cls += " locked";
+      btn.className = cls;
+      btn.style.left = p.x + "%"; btn.style.top = p.y + "%";
+      btn.disabled = !unlocked(m);
+      btn.setAttribute("aria-label", uiText("territory") + " " + m + " — " + modLabel(moduleName(m)));
+      let inner = '<span class="nn">' + pad2(m) + "</span>";
+      if (conquered(m)) inner += '<span class="flag">\u{1F6A9}</span>';
+      else if (!unlocked(m)) inner += '<span class="lock">\u{1F512}</span>';
+      if (isCheckpoint(m)) inner += '<span class="boss">' + esc(uiText("chCheckpoint")) + "</span>";
+      btn.innerHTML = inner;
+      btn.addEventListener("click", () => { if (unlocked(m)) enterNode(m); });
+      nodesEl.appendChild(btn);
+    }
+    $("lg-current").textContent = uiText("lgAvailable");
+    $("lg-conq").textContent = uiText("lgConquered");
+    $("lg-boss").textContent = uiText("lgCheckpoint");
+  }
+
+  function enterNode(m) {
+    activeNode = m;
+    setView("study");
+    setCategory(moduleName(m));
+  }
+
+  function updateBanner() {
+    const m = CATS.indexOf(activeCat) + 1;
+    if (view !== "study" || m < 1) { app.classList.remove("campaign"); return; }
+    app.classList.add("campaign");
+    activeNode = m;
+    const total = moduleCards(m).length, done = moduleSeenCount(m);
+    $("cb-terr").innerHTML = esc(uiText("territory")) + " <b>" + pad2(m) + "</b>";
+    $("cb-bar-i").style.width = (total ? done / total * 100 : 0) + "%";
+    $("cb-prog").textContent = done + " / " + total + " " + uiText("cbStudied");
+    const act = $("cb-action");
+    if (isCheckpoint(m) && done >= total && !bossBeaten(m)) {
+      act.classList.add("show"); act.textContent = uiText("enterFirewall");
+    } else act.classList.remove("show");
+  }
+
+  /* ---------- Firewall challenge (levels 5 & 10) ---------- */
+  const CH_TIME = 13000;
+  let ch = null;
+  const chEl = $("challenge");
+  function shuffleArr(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+  function startChallenge(m) {
+    const pool = [];
+    for (let k = 1; k <= m; k++) pool.push.apply(pool, moduleCards(k));
+    ch = { node: m, pool, target: 7, lives: 3, score: 0, correct: "", answered: false, timerId: null, tRemain: 0, last: -1 };
+    chEl.classList.add("open");
+    nextQuestion();
+  }
+  function clearTimer() { if (ch && ch.timerId) { clearInterval(ch.timerId); ch.timerId = null; } }
+  function startTimer() {
+    ch.tRemain = CH_TIME;
+    ch.timerId = setInterval(() => {
+      ch.tRemain -= 100;
+      const bar = $("ch-timer-i");
+      if (bar) bar.style.width = Math.max(0, ch.tRemain / CH_TIME * 100) + "%";
+      if (ch.tRemain <= 0) { clearTimer(); onTimeout(); }
+    }, 100);
+  }
+  function metaHTML() {
+    return '<span>' + esc(uiText("chLives")) + ' <b>' + ch.lives + '</b></span>' +
+           '<span>' + esc(uiText("chScore")) + ' <b>' + ch.score + '/' + ch.target + '</b></span>';
+  }
+  function updateChMeta() { const m = document.querySelector(".ch-meta"); if (m) m.innerHTML = metaHTML(); }
+
+  function nextQuestion() {
+    clearTimer(); ch.answered = false;
+    let idx = Math.floor(Math.random() * ch.pool.length);
+    if (ch.pool.length > 1 && idx === ch.last) idx = (idx + 1) % ch.pool.length;
+    ch.last = idx;
+    const card = ch.pool[idx];
+    const correct = tr(card).concept;
+    const opts = [correct];
+    const others = ch.pool.filter((c) => c.n !== card.n);
+    shuffleArr(others);
+    for (let i = 0; i < others.length && opts.length < 4; i++) {
+      const cand = tr(others[i]).concept;
+      if (!opts.includes(cand)) opts.push(cand);
+    }
+    shuffleArr(opts);
+    ch.correct = correct;
+    const clue = (lang === "en" && EXP[card.n]) ? EXP[card.n].whatIs : tr(card).explain;
+    const html =
+      '<div class="ch-head">' +
+        '<div class="ch-title"><b>' + esc(uiText("chTitle")) + '</b> · ' + esc(uiText("chCheckpoint")) + ' ' + pad2(ch.node) + '</div>' +
+        '<div class="ch-meta">' + metaHTML() + '</div>' +
+      '</div>' +
+      '<div class="ch-timer"><i id="ch-timer-i"></i></div>' +
+      '<div class="ch-clue"><small>' + esc(uiText("chClue")) + '</small>' + esc(clue) + '</div>' +
+      '<div class="ch-opts">' + opts.map((o) => '<button class="ch-opt" data-v="' + esc(o) + '">' + esc(o) + '</button>').join("") + '</div>';
+    $("ch-card").innerHTML = html;
+    [...document.querySelectorAll(".ch-opt")].forEach((b) => b.addEventListener("click", () => answer(b.dataset.v)));
+    startTimer();
+  }
+  function revealCorrect(selWrong) {
+    [...document.querySelectorAll(".ch-opt")].forEach((b) => {
+      b.disabled = true;
+      if (b.dataset.v === ch.correct) b.classList.add("correct");
+      if (selWrong && b.dataset.v === selWrong) b.classList.add("wrong");
+    });
+  }
+  function answer(sel) {
+    if (ch.answered) return; ch.answered = true; clearTimer();
+    const right = sel === ch.correct;
+    if (right) ch.score++; else { ch.lives--; }
+    revealCorrect(right ? null : sel);
+    updateChMeta();
+    setTimeout(() => {
+      if (ch.score >= ch.target) finishChallenge(true);
+      else if (ch.lives <= 0) finishChallenge(false);
+      else nextQuestion();
+    }, right ? 520 : 1020);
+  }
+  function onTimeout() {
+    if (ch.answered) return; ch.answered = true; ch.lives--;
+    revealCorrect(null); updateChMeta();
+    setTimeout(() => { if (ch.lives <= 0) finishChallenge(false); else nextQuestion(); }, 1020);
+  }
+  function finishChallenge(win) {
+    clearTimer();
+    const node = ch.node;
+    if (win) { profile.bosses[node] = true; saveProfile(); }
+    const cls = win ? "win" : "lose";
+    const title = win ? uiText("chWin") : uiText("chLose");
+    const msg = win ? fmt(uiText("chWinMsg"), { n: node }) : uiText("chLoseMsg");
+    const actions = win
+      ? '<button class="btn primary" id="ch-return">' + esc(uiText("chReturn")) + '</button>'
+      : '<button class="btn primary" id="ch-retry">' + esc(uiText("chRetry")) + '</button><button class="btn ghost" id="ch-exit">' + esc(uiText("chExit")) + '</button>';
+    $("ch-card").innerHTML = '<div class="ch-result ' + cls + '"><h3>' + esc(title) + '</h3><p>' + esc(msg) + '</p><div class="ch-actions">' + actions + '</div></div>';
+    if (win) {
+      celebrate();
+      $("ch-return").addEventListener("click", () => { closeChallenge(); setView("zone"); });
+    } else {
+      $("ch-retry").addEventListener("click", () => startChallenge(node));
+      $("ch-exit").addEventListener("click", closeChallenge);
+    }
+  }
+  function closeChallenge() { clearTimer(); ch = null; chEl.classList.remove("open"); }
+
+  $("cb-action").addEventListener("click", () => { if (isCheckpoint(activeNode)) startChallenge(activeNode); });
+
   document.addEventListener("keydown", (e) => {
+    if (chEl && chEl.classList.contains("open")) return;   // challenge captures input
     if (modal.classList.contains("open")) {
       if (e.key === "Escape") closeProfile();
       return;
