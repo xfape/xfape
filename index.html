@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="LEDGER — a TRON-inspired banking course: 100 glowing concept cards that expand into full deep-dive articles on a neon perspective grid. English, Russian, and Khmer.">
+<meta name="description" content="LEDGER — a TRON-styled daily banking game: a personalized Zone hub with daily-treasure goals and streaks, plus 100 deep-dive cards in English, Russian, and Khmer.">
 <title>LEDGER — How Banking Works</title>
 <style>*{box-sizing:border-box}html,body{margin:0;padding:0}</style>
 </head>
@@ -675,17 +675,220 @@
     .deck, .article { transition: opacity .2s ease; }
     .exit-left, .exit-right, .enter-left, .enter-right { animation-duration: .001s; }
     .progress i { transition: none; }
+    #zone, .modal-card { animation: none; }
+    #claim-btn.ready { animation: none; }
     * { scroll-behavior: auto; }
   }
+
+  /* ================= App-level TRON grid backdrop ================= */
+  #app { position: relative; }
+  #guilloche {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: .58;
+  }
+  .topbar, .filters, .stage, .progress, .controls, .kbd-help, #zone { position: relative; z-index: 1; }
+
+  /* ================= View toggling (Zone hub / Study) ================= */
+  #home-btn { display: none; }
+  #app.view-study #home-btn { display: inline-flex; }
+  #app.view-zone .filters,
+  #app.view-zone .stage,
+  #app.view-zone .progress,
+  #app.view-zone .controls,
+  #app.view-zone .kbd-help { display: none; }
+  #app.view-study #zone { display: none; }
+  #app.view-zone .stat.position { display: none; }
+
+  /* topbar pill button */
+  .icon-btn {
+    font-family: var(--f-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--neon); background: rgba(var(--glow), .06); border: 1px solid rgba(var(--glow), .3);
+    border-radius: 999px; padding: 6px 13px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: box-shadow .2s, background .2s, border-color .2s;
+  }
+  .icon-btn:hover { box-shadow: 0 0 18px -6px rgba(var(--glow), .7); background: rgba(var(--glow), .12); }
+  .icon-btn svg { width: 14px; height: 14px; }
+  .icon-btn:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 2px; }
+
+  /* ================= Zone (home) ================= */
+  #zone {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(6px, 2vw, 18px) 0;
+    animation: enter .5s cubic-bezier(.2,.75,.25,1) both;
+  }
+  .zone-grid {
+    width: min(1040px, 100%);
+    display: grid;
+    grid-template-columns: 1.05fr .95fr;
+    gap: clamp(18px, 3.5vw, 34px);
+    align-items: center;
+  }
+  @media (max-width: 840px) { .zone-grid { grid-template-columns: 1fr; gap: 18px; } }
+
+  .zone-hero { display: flex; flex-direction: column; gap: 14px; }
+  .zone-eyebrow {
+    font-family: var(--f-mono); font-size: 11px; letter-spacing: .34em;
+    text-transform: uppercase; color: var(--neon);
+  }
+  .zone-greeting {
+    font-family: var(--f-display); font-weight: 600;
+    font-size: clamp(30px, 6vw, 50px); line-height: 1.04;
+    letter-spacing: -.02em; color: var(--ink); text-wrap: balance;
+  }
+  .zone-greeting b {
+    color: var(--neon); font-weight: 600;
+    text-shadow: 0 0 24px rgba(var(--glow), .55);
+  }
+  .zone-sub { font-size: clamp(14px, 2.4vw, 16px); line-height: 1.6; color: var(--muted); max-width: 44ch; }
+  .zone-sub b { color: var(--neon-2); font-weight: 600; }
+  .zone-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .btn.big { padding: 14px 22px; }
+  .btn.ghost { background: transparent; border-color: rgba(var(--glow), .3); }
+
+  .zone-cards { display: flex; flex-direction: column; gap: 14px; }
+  .zpanel {
+    position: relative;
+    background: linear-gradient(160deg, rgba(var(--glow), .06), transparent 62%), var(--surface);
+    border: 1px solid rgba(var(--glow), .24);
+    border-radius: var(--r);
+    box-shadow: var(--shadow), 0 0 44px -20px rgba(var(--glow), .5);
+    padding: 18px 20px;
+  }
+  .zpanel-lbl {
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 13px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .zpanel-lbl::before { content: ""; width: 12px; height: 1px; background: var(--neon); opacity: .85; }
+
+  /* treasure */
+  .treasure-body { display: flex; align-items: center; gap: 18px; }
+  .ring-wrap { flex: 0 0 auto; width: 92px; height: 92px; position: relative; }
+  .ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: rgba(var(--glow), .14); stroke-width: 7; }
+  .ring-fg {
+    fill: none; stroke: var(--neon); stroke-width: 7; stroke-linecap: round;
+    filter: drop-shadow(0 0 6px rgba(var(--glow), .85));
+    transition: stroke-dashoffset .7s cubic-bezier(.16,1,.3,1), stroke .3s, filter .3s;
+  }
+  .ring-wrap.done .ring-fg { stroke: var(--neon-2); filter: drop-shadow(0 0 9px rgba(var(--glow-2), .95)); }
+  .ring-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+  .treasure-info { flex: 1; }
+  .treasure-status { font-family: var(--f-mono); font-size: 13.5px; color: var(--ink); }
+  .treasure-status b { color: var(--neon); font-size: 22px; }
+  #claim-btn { margin-top: 12px; width: 100%; justify-content: center; }
+  #claim-btn:disabled { opacity: .38; cursor: default; filter: none; box-shadow: none; }
+  #claim-btn.ready {
+    background: var(--neon-2); border-color: var(--neon-2); color: #180A02;
+    box-shadow: 0 0 26px -6px rgba(var(--glow-2), .85); animation: pulse 1.9s ease-in-out infinite;
+  }
+  #claim-btn.ready:hover { color: #180A02; }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 20px -8px rgba(var(--glow-2), .7); }
+    50%     { box-shadow: 0 0 34px -3px rgba(var(--glow-2), 1); }
+  }
+
+  /* streak */
+  .streak-row { display: flex; align-items: baseline; gap: 16px; }
+  .streak-num {
+    font-family: var(--f-mono); font-weight: 600; font-size: 42px; line-height: 1;
+    color: var(--neon-2); text-shadow: 0 0 20px rgba(var(--glow-2), .5);
+  }
+  .streak-num small { font-size: 13px; color: var(--muted); font-weight: 400; margin-left: 5px; }
+  .streak-best { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+  .streak-best b { color: var(--ink); }
+  .week { display: flex; gap: 7px; margin-top: 16px; }
+  .day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .day .dot {
+    width: 100%; max-width: 32px; aspect-ratio: 1; border-radius: 8px;
+    border: 1px solid rgba(var(--glow), .2); background: rgba(var(--glow), .05);
+    transition: background .3s, box-shadow .3s, border-color .3s;
+  }
+  .day.done .dot { background: var(--neon); border-color: var(--neon); box-shadow: 0 0 14px -3px rgba(var(--glow), .85); }
+  .day.today .dot { border-color: var(--neon-2); }
+  .day .dl { font-family: var(--f-mono); font-size: 9px; letter-spacing: .06em; color: var(--faint); text-transform: uppercase; }
+
+  /* mastery */
+  .mastery-num { font-family: var(--f-mono); font-weight: 600; font-size: 30px; color: var(--ink); }
+  .mastery-num small { color: var(--muted); font-size: 14px; font-weight: 400; }
+  .mini-bar { height: 6px; border-radius: 6px; background: rgba(var(--glow), .12); overflow: hidden; margin: 12px 0 10px; }
+  .mini-bar i {
+    display: block; height: 100%; width: 0;
+    background: linear-gradient(90deg, var(--neon), var(--neon-2));
+    box-shadow: 0 0 10px rgba(var(--glow), .5);
+    transition: width .6s cubic-bezier(.16,1,.3,1);
+  }
+  .zmeta { display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+  .zmeta b { color: var(--neon-2); }
+
+  /* ================= Profile modal ================= */
+  .modal {
+    position: fixed; inset: 0; z-index: 50; display: none;
+    align-items: center; justify-content: center; padding: 20px;
+    background: rgba(2,5,10,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .modal.open { display: flex; animation: fade .25s ease both; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .modal-card {
+    width: min(430px, 100%);
+    background: linear-gradient(160deg, rgba(var(--glow), .08), transparent 60%), var(--surface);
+    border: 1px solid rgba(var(--glow), .32);
+    border-radius: var(--r);
+    box-shadow: var(--shadow), 0 0 70px -20px rgba(var(--glow), .6);
+    padding: clamp(22px, 4vw, 30px);
+    display: flex; flex-direction: column; gap: 16px;
+    animation: enter .35s cubic-bezier(.16,1,.3,1) both;
+  }
+  .modal-title { font-family: var(--f-display); font-weight: 600; font-size: 22px; color: var(--ink); }
+  .modal-lead { font-size: 14px; color: var(--muted); line-height: 1.5; margin-top: -8px; }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field label { font-family: var(--f-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field input {
+    font-family: var(--f-body); font-size: 15px; color: var(--ink);
+    background: rgba(var(--glow), .05); border: 1px solid rgba(var(--glow), .28);
+    border-radius: var(--r-s); padding: 11px 13px; outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .field input:focus { border-color: var(--neon); box-shadow: 0 0 0 3px rgba(var(--glow), .16); }
+  .goal-opts { display: flex; gap: 8px; }
+  .goal-opt {
+    flex: 1; font-family: var(--f-mono); font-size: 14px; color: var(--muted);
+    background: rgba(var(--glow), .04); border: 1px solid rgba(var(--glow), .24);
+    border-radius: var(--r-s); padding: 10px 0; cursor: pointer; text-align: center;
+    transition: color .18s, background .18s, border-color .18s, box-shadow .18s;
+  }
+  .goal-opt:hover { border-color: rgba(var(--glow), .5); }
+  .goal-opt[aria-pressed="true"] {
+    color: #041016; background: var(--neon); border-color: var(--neon);
+    box-shadow: 0 0 18px -6px rgba(var(--glow), .7);
+  }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+
+  /* claim celebration layer */
+  .zap { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
 </style>
 
-<div id="app">
+<div id="app" class="view-zone">
+  <canvas id="guilloche" aria-hidden="true"></canvas>
   <header class="topbar">
     <div class="brand">
       <div class="wordmark">LE<b>D</b>GER</div>
       <div class="tagline" id="tagline">How banking works<span class="rule">/</span>100 cards to the C‑suite</div>
     </div>
     <div class="topbar-right">
+      <button class="icon-btn" id="home-btn" aria-label="Zone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>
+        <span id="home-txt">Zone</span>
+      </button>
       <div class="lang-switch" id="lang-switch" role="group" aria-label="Language">
         <button class="lang" data-lang="en" aria-pressed="true" lang="en">EN</button>
         <button class="lang" data-lang="ru" aria-pressed="false" lang="ru">РУ</button>
@@ -704,11 +907,54 @@
     </div>
   </header>
 
+  <section id="zone">
+    <div class="zone-grid">
+      <div class="zone-hero">
+        <div class="zone-eyebrow" id="zone-eyebrow">Daily run</div>
+        <h1 class="zone-greeting"><span id="zone-greet">Welcome,</span> <b id="zone-name">Operator</b></h1>
+        <p class="zone-sub" id="zone-sub"></p>
+        <div class="zone-cta">
+          <button class="btn primary big" id="enter-grid">Enter the Grid</button>
+          <button class="btn ghost big" id="edit-profile">Edit profile</button>
+        </div>
+      </div>
+      <div class="zone-cards">
+        <div class="zpanel treasure">
+          <div class="zpanel-lbl" id="lbl-treasure">Daily treasure</div>
+          <div class="treasure-body">
+            <div class="ring-wrap" id="ring-wrap">
+              <svg viewBox="0 0 92 92"><circle class="ring-bg" cx="46" cy="46" r="40"></circle><circle class="ring-fg" id="ring-fg" cx="46" cy="46" r="40"></circle></svg>
+              <div class="ring-icon" id="ring-icon">◈</div>
+            </div>
+            <div class="treasure-info">
+              <div class="treasure-status" id="treasure-status"><b>0</b> / 5</div>
+              <button class="btn" id="claim-btn" disabled>Claim treasure</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="zpanel streak">
+          <div class="zpanel-lbl" id="lbl-streak">Streak</div>
+          <div class="streak-row">
+            <div class="streak-num"><span id="streak-num-val">0</span><small id="streak-days">days</small></div>
+            <div class="streak-best"><span id="streak-best-word">Best</span> <b id="streak-best-val">0</b></div>
+          </div>
+          <div class="week" id="week-strip"></div>
+        </div>
+
+        <div class="zpanel mastery">
+          <div class="zpanel-lbl" id="lbl-mastery">Mastery</div>
+          <div class="mastery-num"><span id="mastery-num-val">0</span><small> / 100</small></div>
+          <div class="mini-bar"><i id="mastery-bar"></i></div>
+          <div class="zmeta"><span id="lbl-treasures">Treasures</span> <b id="treasure-count">0</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <nav class="filters" id="filters" aria-label="Filter by module"></nav>
 
   <section class="stage">
-    <canvas id="guilloche" aria-hidden="true"></canvas>
-
     <div class="deck" id="deck">
       <article class="card" id="card" tabindex="0" role="button" aria-label="Concept card. Activate to open the full article.">
         <div class="card-face">
@@ -772,6 +1018,29 @@
 
   <div class="kbd-help" id="kbd-help">
     <kbd>←</kbd> <kbd>→</kbd> navigate · <kbd>Space</kbd> flip · <kbd>K</kbd> master · <kbd>S</kbd> shuffle
+  </div>
+
+  <div class="modal" id="profile-modal" role="dialog" aria-modal="true" aria-label="Profile">
+    <div class="modal-card">
+      <div class="modal-title" id="modal-title">Your profile</div>
+      <p class="modal-lead" id="modal-lead">Set your call sign and daily goal.</p>
+      <div class="field">
+        <label id="modal-name-lbl" for="name-input">Call sign</label>
+        <input id="name-input" type="text" maxlength="24" autocomplete="off" spellcheck="false" placeholder="Enter your name">
+      </div>
+      <div class="field">
+        <label id="modal-goal-lbl">Daily goal (cards)</label>
+        <div class="goal-opts" id="goal-opts">
+          <button class="goal-opt" data-goal="3">3</button>
+          <button class="goal-opt" data-goal="5">5</button>
+          <button class="goal-opt" data-goal="10">10</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn ghost" id="modal-cancel">Cancel</button>
+        <button class="btn primary" id="modal-save">Save</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -914,7 +1183,20 @@
     cardAria: "Concept card. Activate to open the full article.",
     prevAria: "Previous card", nextAria: "Next card", flipAria: "Open the full article",
     readAria: "Open the full article", closeAria: "Close the article",
-    markAria: "Mark as mastered", shuffleAria: "Shuffle deck"
+    markAria: "Mark as mastered", shuffleAria: "Shuffle deck",
+    operator: "Operator", zoneEyebrow: "Daily run", greet: "Welcome,",
+    enterGrid: "Enter the Grid", editProfile: "Edit profile", zoneBtn: "Zone",
+    dailyTreasure: "Daily treasure", claim: "Claim treasure", claimed: "Secured today",
+    streakLbl: "Streak", daysWord: "days", bestWord: "Best",
+    masteryLbl: "Mastery", treasuresLbl: "Treasures",
+    weekdays: "S,M,T,W,T,F,S",
+    profileTitle: "Your profile", profileLead: "Set your call sign and daily goal.",
+    nameLbl: "Call sign", namePh: "Enter your name", goalLbl: "Daily goal (cards)",
+    save: "Save", cancel: "Cancel",
+    subReady: "Today's treasure is ready — claim it to keep your streak alive.",
+    subClaimed: "Today's treasure secured. Come back tomorrow to keep the streak.",
+    subProgress: "Study {left} more card(s) to unlock today's treasure.",
+    subStreak0: "Start a streak today — study {goal} cards and claim your first treasure."
   };
 
   // Supplemental UI strings for new article elements (checked before the base translations).
@@ -922,11 +1204,37 @@
     ru: { read: "Читать", close: "Закрыть", reveal: "Открыть статью целиком",
           secWhat: "Что это такое", secHow: "Как это работает", secExample: "Пример с цифрами", secOverview: "Обзор",
           readAria: "Открыть статью", closeAria: "Закрыть статью", flipAria: "Открыть статью",
-          cardAria: "Карточка концепции. Нажмите, чтобы открыть статью.", kbFlip: "читать" },
+          cardAria: "Карточка концепции. Нажмите, чтобы открыть статью.", kbFlip: "читать",
+          operator: "Оператор", zoneEyebrow: "Ежедневный заход", greet: "С возвращением,",
+          enterGrid: "Войти в Сетку", editProfile: "Профиль", zoneBtn: "Зона",
+          dailyTreasure: "Ежедневное сокровище", claim: "Забрать сокровище", claimed: "Собрано сегодня",
+          streakLbl: "Серия", daysWord: "дн.", bestWord: "Рекорд",
+          masteryLbl: "Освоение", treasuresLbl: "Сокровища",
+          weekdays: "В,П,В,С,Ч,П,С",
+          profileTitle: "Ваш профиль", profileLead: "Укажите позывной и дневную цель.",
+          nameLbl: "Позывной", namePh: "Введите имя", goalLbl: "Дневная цель (карт)",
+          save: "Сохранить", cancel: "Отмена",
+          subReady: "Сегодняшнее сокровище готово — заберите его, чтобы сохранить серию.",
+          subClaimed: "Сегодняшнее сокровище собрано. Возвращайтесь завтра, чтобы продлить серию.",
+          subProgress: "Изучите ещё {left} карт(ы), чтобы открыть сегодняшнее сокровище.",
+          subStreak0: "Начните серию сегодня — изучите {goal} карт и заберите первое сокровище." },
     km: { read: "អាន", close: "បិទ", reveal: "អានអត្ថបទពេញ",
           secWhat: "តើវាជាអ្វី", secHow: "របៀបដំណើរការ", secExample: "ឧទាហរណ៍ជាក់ស្តែង", secOverview: "ទិដ្ឋភាពទូទៅ",
           readAria: "បើកអត្ថបទ", closeAria: "បិទអត្ថបទ", flipAria: "បើកអត្ថបទ",
-          cardAria: "កាតគំនិត។ ចុចដើម្បីបើកអត្ថបទ។", kbFlip: "អាន" }
+          cardAria: "កាតគំនិត។ ចុចដើម្បីបើកអត្ថបទ។", kbFlip: "អាន",
+          operator: "អ្នកលេង", zoneEyebrow: "ដំណើរប្រចាំថ្ងៃ", greet: "សូមស្វាគមន៍,",
+          enterGrid: "ចូលទៅ Grid", editProfile: "កែប្រវត្តិរូប", zoneBtn: "តំបន់",
+          dailyTreasure: "កំណប់ប្រចាំថ្ងៃ", claim: "យកកំណប់", claimed: "បានយករួច",
+          streakLbl: "ស្ទ្រីក", daysWord: "ថ្ងៃ", bestWord: "ខ្ពស់បំផុត",
+          masteryLbl: "ជំនាញ", treasuresLbl: "កំណប់",
+          weekdays: "អា,ច,អ,ពុ,ព្រ,សុ,សៅ",
+          profileTitle: "ប្រវត្តិរូបរបស់អ្នក", profileLead: "កំណត់ឈ្មោះ និងគោលដៅប្រចាំថ្ងៃ។",
+          nameLbl: "ឈ្មោះ", namePh: "បញ្ចូលឈ្មោះ", goalLbl: "គោលដៅប្រចាំថ្ងៃ (កាត)",
+          save: "រក្សាទុក", cancel: "បោះបង់",
+          subReady: "កំណប់ថ្ងៃនេះរួចរាល់ — យកវាដើម្បីរក្សាស្ទ្រីក។",
+          subClaimed: "បានយកកំណប់ថ្ងៃនេះ។ ត្រឡប់មកវិញថ្ងៃស្អែក។",
+          subProgress: "សិក្សាកាតបន្ថែម {left} ដើម្បីបើកកំណប់ថ្ងៃនេះ។",
+          subStreak0: "ចាប់ផ្តើមស្ទ្រីកថ្ងៃនេះ — សិក្សា {goal} កាត ហើយយកកំណប់ដំបូង។" }
   };
 
   // Expanded English article content (whatIs / how / example), keyed by card number.
@@ -1101,6 +1409,7 @@
     stageEl.classList.add("reading");
     articleScroll.scrollTop = 0;
     updateReadBtn();
+    recordStudy(currentCard().n);
   }
 
   function closeArticle() {
@@ -1116,7 +1425,7 @@
   function swap(delta) {
     pos = (pos + delta + order.length) % order.length;
     render();
-    if (mode === "article") articleScroll.scrollTop = 0;
+    if (mode === "article") { articleScroll.scrollTop = 0; recordStudy(currentCard().n); }
   }
 
   // navigate with a 3D page-turn transform on the active surface
@@ -1242,12 +1551,210 @@
 
     updateReadBtn();
     render();
+    if (typeof renderZone === "function") renderZone();
   }
 
   [...document.querySelectorAll("#lang-switch .lang")].forEach((b) =>
     b.addEventListener("click", () => applyLang(b.dataset.lang)));
 
+  /* ===================== DAILY TREASURE / PROFILE ===================== */
+  const app = $("app");
+  const DEFAULT_GOAL = 5;
+  let view = "zone";
+  let profile = { name: "", goal: DEFAULT_GOAL, best: 0, treasures: 0, days: {} };
+  try {
+    const p = JSON.parse(localStorage.getItem("ledger.profile") || "null");
+    if (p && typeof p === "object") profile = Object.assign(profile, p);
+  } catch (e) {}
+  if (!profile.days || typeof profile.days !== "object") profile.days = {};
+  const saveProfile = () => { try { localStorage.setItem("ledger.profile", JSON.stringify(profile)); } catch (e) {} };
+
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const ymd = (d) => d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  const todayKey = () => ymd(new Date());
+  const dayRec = (k) => profile.days[k] || (profile.days[k] = { studied: [], claimed: false });
+  const studiedCount = (k) => { const r = profile.days[k]; return r && r.studied ? r.studied.length : 0; };
+  const goalMet = (k) => studiedCount(k) >= profile.goal;
+  const isClaimed = (k) => { const r = profile.days[k]; return !!(r && r.claimed); };
+
+  function computeStreak() {
+    let s = 0; const d = new Date();
+    if (!isClaimed(ymd(d))) d.setDate(d.getDate() - 1);
+    while (isClaimed(ymd(d))) { s++; d.setDate(d.getDate() - 1); }
+    return s;
+  }
+
+  function recordStudy(n) {
+    const r = dayRec(todayKey());
+    if (!r.studied.includes(n)) {
+      r.studied.push(n);
+      saveProfile();
+      if (view === "zone") renderZone();
+    }
+  }
+
+  const fmt = (str, map) => str.replace(/\{(\w+)\}/g, (m, k) => (k in map ? map[k] : m));
+
+  function setRing(pct, done) {
+    const c = 2 * Math.PI * 40;
+    const fg = $("ring-fg");
+    fg.style.strokeDasharray = c.toFixed(1);
+    fg.style.strokeDashoffset = (c * (1 - Math.max(0, Math.min(1, pct)))).toFixed(1);
+    $("ring-wrap").classList.toggle("done", done);
+  }
+
+  function renderWeek() {
+    const wrap = $("week-strip"); wrap.textContent = "";
+    const names = uiText("weekdays").split(",");
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(today.getDate() - i);
+      const k = ymd(d);
+      const el = document.createElement("div"); el.className = "day";
+      if (isClaimed(k)) el.classList.add("done");
+      if (i === 0) el.classList.add("today");
+      const dot = document.createElement("div"); dot.className = "dot";
+      const dl = document.createElement("div"); dl.className = "dl"; dl.textContent = names[d.getDay()] || "";
+      el.append(dot, dl); wrap.appendChild(el);
+    }
+  }
+
+  function renderZone() {
+    const k = todayKey();
+    const done = studiedCount(k), goal = profile.goal;
+    const met = goalMet(k), claimed = isClaimed(k);
+    const streak = computeStreak();
+    if (streak > (profile.best || 0)) { profile.best = streak; saveProfile(); }
+
+    // labels + buttons (localised)
+    $("zone-eyebrow").textContent = uiText("zoneEyebrow");
+    $("zone-greet").textContent = uiText("greet");
+    $("zone-name").textContent = profile.name || uiText("operator");
+    $("enter-grid").textContent = uiText("enterGrid");
+    $("edit-profile").textContent = uiText("editProfile");
+    $("home-txt").textContent = uiText("zoneBtn");
+    $("home-btn").setAttribute("aria-label", uiText("zoneBtn"));
+    $("lbl-treasure").textContent = uiText("dailyTreasure");
+    $("lbl-streak").textContent = uiText("streakLbl");
+    $("lbl-mastery").textContent = uiText("masteryLbl");
+    $("streak-days").textContent = " " + uiText("daysWord");
+    $("streak-best-word").textContent = uiText("bestWord");
+    $("lbl-treasures").textContent = uiText("treasuresLbl");
+
+    // treasure ring + claim
+    setRing(goal ? done / goal : 0, met);
+    $("treasure-status").innerHTML = "<b>" + done + "</b> / " + goal;
+    const cb = $("claim-btn");
+    if (claimed) { cb.disabled = true; cb.classList.remove("ready"); cb.textContent = uiText("claimed"); }
+    else if (met) { cb.disabled = false; cb.classList.add("ready"); cb.textContent = uiText("claim"); }
+    else { cb.disabled = true; cb.classList.remove("ready"); cb.textContent = uiText("claim"); }
+
+    // streak + mastery
+    $("streak-num-val").textContent = streak;
+    $("streak-best-val").textContent = profile.best || 0;
+    $("treasure-count").textContent = profile.treasures || 0;
+    $("mastery-num-val").textContent = mastered.size;
+    $("mastery-bar").style.width = mastered.size + "%";
+    renderWeek();
+
+    // narrative sub-line
+    let sub;
+    if (claimed) sub = uiText("subClaimed");
+    else if (met) sub = uiText("subReady");
+    else if (streak === 0 && done === 0) sub = fmt(uiText("subStreak0"), { goal: goal });
+    else sub = fmt(uiText("subProgress"), { left: Math.max(0, goal - done) });
+    $("zone-sub").textContent = sub;
+  }
+
+  function celebrate() {
+    if (reduce) return;
+    const zap = document.createElement("div"); zap.className = "zap"; document.body.appendChild(zap);
+    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    const cs = getComputedStyle(document.documentElement);
+    const colors = [cs.getPropertyValue("--neon").trim() || "#4CE7FF", cs.getPropertyValue("--neon-2").trim() || "#FF7A2F"];
+    for (let i = 0; i < 24; i++) {
+      const s = document.createElement("span");
+      const col = colors[i % 2];
+      s.style.cssText = "position:absolute;left:" + cx + "px;top:" + cy + "px;width:9px;height:9px;border-radius:2px;background:" + col + ";box-shadow:0 0 12px " + col + ";";
+      zap.appendChild(s);
+      const ang = (i / 24) * Math.PI * 2, dist = 130 + Math.random() * 170;
+      s.animate(
+        [{ transform: "translate(-50%,-50%) rotate(0deg)", opacity: 1 },
+         { transform: "translate(calc(-50% + " + (Math.cos(ang) * dist).toFixed(1) + "px), calc(-50% + " + (Math.sin(ang) * dist).toFixed(1) + "px)) rotate(260deg)", opacity: 0 }],
+        { duration: 900 + Math.random() * 500, easing: "cubic-bezier(.16,1,.3,1)" }
+      );
+    }
+    setTimeout(() => zap.remove(), 1600);
+  }
+
+  function claimTreasure() {
+    const k = todayKey();
+    if (!goalMet(k) || isClaimed(k)) return;
+    dayRec(k).claimed = true;
+    profile.treasures = (profile.treasures || 0) + 1;
+    const st = computeStreak();
+    if (st > (profile.best || 0)) profile.best = st;
+    saveProfile();
+    celebrate();
+    renderZone();
+  }
+
+  function setView(v) {
+    view = v;
+    app.classList.toggle("view-zone", v === "zone");
+    app.classList.toggle("view-study", v === "study");
+    if (v === "study") { resize(); draw(); }
+    if (v === "zone") renderZone();
+  }
+
+  /* ----- profile modal ----- */
+  const modal = $("profile-modal");
+  let modalGoal = DEFAULT_GOAL;
+  function openProfile() {
+    $("modal-title").textContent = uiText("profileTitle");
+    $("modal-lead").textContent = uiText("profileLead");
+    $("modal-name-lbl").textContent = uiText("nameLbl");
+    $("modal-goal-lbl").textContent = uiText("goalLbl");
+    $("name-input").placeholder = uiText("namePh");
+    $("name-input").value = profile.name || "";
+    $("modal-save").textContent = uiText("save");
+    $("modal-cancel").textContent = uiText("cancel");
+    modalGoal = profile.goal || DEFAULT_GOAL;
+    [...document.querySelectorAll(".goal-opt")].forEach((b) =>
+      b.setAttribute("aria-pressed", (+b.dataset.goal === modalGoal) ? "true" : "false"));
+    modal.classList.add("open");
+    setTimeout(() => $("name-input").focus(), 60);
+  }
+  function closeProfile() { modal.classList.remove("open"); }
+  function saveProfileForm() {
+    profile.name = ($("name-input").value || "").trim().slice(0, 24);
+    profile.goal = modalGoal;
+    saveProfile();
+    closeProfile();
+    renderZone();
+  }
+
+  $("enter-grid").addEventListener("click", () => setView("study"));
+  $("home-btn").addEventListener("click", () => setView("zone"));
+  $("edit-profile").addEventListener("click", openProfile);
+  $("claim-btn").addEventListener("click", claimTreasure);
+  $("modal-cancel").addEventListener("click", closeProfile);
+  $("modal-save").addEventListener("click", saveProfileForm);
+  $("name-input").addEventListener("keydown", (e) => { if (e.key === "Enter") saveProfileForm(); });
+  modal.addEventListener("click", (e) => { if (e.target === modal) closeProfile(); });
+  [...document.querySelectorAll(".goal-opt")].forEach((b) =>
+    b.addEventListener("click", () => {
+      modalGoal = +b.dataset.goal;
+      [...document.querySelectorAll(".goal-opt")].forEach((x) =>
+        x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+    }));
+
   document.addEventListener("keydown", (e) => {
+    if (modal.classList.contains("open")) {
+      if (e.key === "Escape") closeProfile();
+      return;
+    }
+    if (view !== "study") return;   // hub view: don't hijack study shortcuts
     const onControl = e.target.classList &&
       (e.target.classList.contains("chip") || e.target.classList.contains("lang"));
     switch (e.key) {
@@ -1352,6 +1859,8 @@
   /* ===================== INIT ===================== */
   resize();
   applyLang(lang);
+  setView("zone");
+  if (!profile.name) openProfile();
   if (reduce) draw(); else loop();
 
   // redraw guilloché when the viewer flips theme (data-theme mutation)

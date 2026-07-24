@@ -49,6 +49,24 @@ Khmer each article shows the concept, a concise overview, and the C-suite lens.
 The chosen language and your "mastered" progress persist in the browser via
 `localStorage`.
 
+## Daily game (Zone hub)
+
+The app opens on a personalized **Zone** — a TRON-style hub — before the cards:
+
+- **Personalization** — set a call sign (name) and a daily goal (3 / 5 / 10 cards),
+  stored locally and editable any time.
+- **Daily treasure** — a progress ring tracks how many distinct cards you've
+  studied today; reach the goal and the treasure becomes claimable (with a
+  little celebration on claim).
+- **Streak management** — claiming keeps your streak alive; the hub shows your
+  current streak, best streak, and a 7-day strip of claimed days. Miss a day and
+  the streak resets.
+- **Mastery** — overall mastered count (X / 100) and total treasures collected.
+
+"Enter the Grid" drops into the study experience; the **Zone** button returns to
+the hub. All progress (profile, streak, treasures, mastered, language) persists
+in `localStorage`.
+
 ## Features
 
 - **Shared-element morph** — the concept card expands into the full article, and
