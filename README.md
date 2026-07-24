@@ -1,8 +1,10 @@
 # LEDGER — How Banking Works
 
-An animated, self-contained flashcard game that teaches how banking works, built
-for anyone aiming at C-level management. It runs as a single HTML file with no
-build step, no dependencies, and no network calls — just open `index.html`.
+An animated, self-contained learning app that teaches how banking works, built
+for anyone aiming at C-level management. Each of 100 concept cards **morphs into
+a full deep-dive article** in 3D; pages turn in space as you move through them.
+It runs as a single HTML file with no build step, no dependencies, and no
+network calls — just open `index.html`.
 
 ## The curriculum
 
@@ -20,28 +22,41 @@ interest forms* and building up to the metrics a bank CEO is judged on:
 9. **Markets & Fees** — capital markets, securitization, wealth management, derivatives
 10. **Strategy & Value** — ROE vs cost of equity, economic profit, fintech disruption, the CEO scorecard
 
-Each card flips from a concept prompt to a detailed explanation plus a **C-Suite
-Lens** — a one-line strategic takeaway.
+A card opens (click, `Space`, or **Read**) and expands into a full article laid
+out in labelled sections:
+
+- **What it is** — a plain-language definition
+- **How it works** — the mechanism and why it matters to a bank
+- **Worked example** — a concrete scenario with real numbers and a calculation
+- **C-Suite Lens** — a one-line strategic takeaway
 
 ## Languages
 
-The whole curriculum — all 100 cards, module names, and the interface — is
-available in three languages, switchable live from the top-right control:
+The whole app — all 100 cards, module names, and the interface — is available in
+three languages, switchable live from the top-right control:
 
-- **English (EN)**
-- **Russian (РУ)**
-- **Khmer (ខ្មែរ)**
+- **English (EN)** — full expanded articles (What it is / How it works / Worked example)
+- **Russian (РУ)** — full translation (concept + overview + C-suite lens)
+- **Khmer (ខ្មែរ)** — full translation (concept + overview + C-suite lens)
 
+The expanded English worked-examples are not yet translated; in Russian and
+Khmer each article shows the concept, a concise overview, and the C-suite lens.
 The chosen language and your "mastered" progress persist in the browser via
 `localStorage`.
 
 ## Features
 
-- 3D card-flip animation and a live guilloché (banknote-engraving) canvas backdrop
+- **Shared-element morph** — the concept card expands into the full article, and
+  collapses back, with a depth (dive-in) transition
+- **3D page-turn navigation** — articles and cards rotate through space as you
+  move next/previous
+- Pointer parallax tilt on the concept card; a live guilloché (banknote-engraving)
+  canvas backdrop
 - Filter by module, shuffle the deck, and mark cards as mastered
-- Full keyboard control — `←`/`→` navigate, `Space` flip, `K` master, `S` shuffle
+- Full keyboard control — `←`/`→` navigate, `Space` open/close, `Esc` close,
+  `K` master, `S` shuffle
 - Light and dark themes (follows the OS/browser preference)
-- Respects `prefers-reduced-motion`
+- Respects `prefers-reduced-motion` (disables the 3D transforms and parallax)
 - Responsive layout for desktop and mobile
 
 ## Usage
@@ -57,11 +72,16 @@ python3 -m http.server
 
 Everything lives in `index.html`. Content is data-driven:
 
-- `CARDS` — the English base curriculum (module, concept, explanation, lens)
-- `I18N` — per-language overrides keyed by card number, plus translated module
-  names and UI strings
-- `UI_EN` — the English interface strings
+- `CARDS` — the base curriculum (module, concept, short explanation, lens)
+- `EXP` — the expanded English article content keyed by card number
+  (`whatIs` / `how` / `example`)
+- `I18N` — per-language overrides (concept, overview, lens) keyed by card number,
+  plus translated module names and UI strings
+- `UI_EN` / `UI_ADD` — the English interface strings and supplemental
+  per-language UI strings
 
-**Adding a language** is mechanical: translate the same structure (10 module
-names, ~21 UI strings, 100 cards), add one entry to `I18N`, and add one button
-to the language switcher.
+**Adding a language** is mechanical: translate the same structure (module names,
+UI strings, and the 100 cards), add one entry to `I18N`, and add one button to
+the language switcher. **Translating the expanded articles** into Russian/Khmer
+means adding `whatIs` / `how` / `example` to each language's card entries; the
+renderer will pick them up automatically.
