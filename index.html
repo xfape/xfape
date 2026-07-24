@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="LEDGER — an animated 100-card flashcard game teaching how banking works, from how interest forms to the CEO scorecard. Available in English, Russian, and Khmer.">
+<title>LEDGER — How Banking Works</title>
+<style>*{box-sizing:border-box}html,body{margin:0;padding:0}</style>
+</head>
+<body>
+<style>
+  :root {
+    /* ---- Ledger paper (light) ---- */
+    --bg:        #ECEFE8;
+    --bg-2:      #E3E7DD;
+    --surface:   #FBFAF4;
+    --surface-2: #F3F2EA;
+    --ink:       #14201C;
+    --muted:     #56655C;
+    --faint:     #7C8A80;
+    --line:      #CDD3C7;
+    --line-soft: #DDE1D6;
+    --gold:      #9C7526;
+    --gold-2:    #B08636;
+    --green:     #1F5C48;
+    --good:      #2F7D4F;
+    --warn:      #A8791F;
+    --guilloche: 24, 90, 72;   /* rgb of green ink for engraving */
+    --shadow:    0 24px 60px -28px rgba(20,32,28,.45), 0 4px 14px -8px rgba(20,32,28,.25);
+
+    /* Latin faces first; Khmer faces appended so Khmer glyphs fall through per-glyph */
+    --f-display: "Hoefler Text","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman","Noto Serif Khmer","Hanuman","Noto Sans Khmer","Khmer OS",serif;
+    --f-body:    system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,"Noto Sans Khmer","Khmer OS System","Khmer OS","Battambang",sans-serif;
+    --f-mono:    ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,"Noto Sans Khmer","Khmer OS",monospace;
+    --f-km:      "Noto Sans Khmer","Khmer OS System","Khmer OS","Battambang","Hanuman",system-ui,sans-serif;
+
+    --r:   14px;
+    --r-s: 9px;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:        #0C1512;
+      --bg-2:      #0A1210;
+      --surface:   #15201B;
+      --surface-2: #1B2721;
+      --ink:       #EAEAE0;
+      --muted:     #9BAB9F;
+      --faint:     #6E7E72;
+      --line:      #27342C;
+      --line-soft: #1F2B24;
+      --gold:      #D8B25A;
+      --gold-2:    #E4C578;
+      --green:     #4FB088;
+      --good:      #58B47C;
+      --warn:      #D6A84A;
+      --guilloche: 79, 176, 136;
+      --shadow:    0 30px 70px -30px rgba(0,0,0,.7), 0 6px 20px -10px rgba(0,0,0,.6);
+      color-scheme: dark;
+    }
+  }
+  /* Explicit viewer toggle must win over the media query, both directions */
+  :root[data-theme="light"] {
+    --bg:#ECEFE8;--bg-2:#E3E7DD;--surface:#FBFAF4;--surface-2:#F3F2EA;--ink:#14201C;
+    --muted:#56655C;--faint:#7C8A80;--line:#CDD3C7;--line-soft:#DDE1D6;--gold:#9C7526;
+    --gold-2:#B08636;--green:#1F5C48;--good:#2F7D4F;--warn:#A8791F;--guilloche:24,90,72;
+    --shadow:0 24px 60px -28px rgba(20,32,28,.45),0 4px 14px -8px rgba(20,32,28,.25);
+    color-scheme:light;
+  }
+  :root[data-theme="dark"] {
+    --bg:#0C1512;--bg-2:#0A1210;--surface:#15201B;--surface-2:#1B2721;--ink:#EAEAE0;
+    --muted:#9BAB9F;--faint:#6E7E72;--line:#27342C;--line-soft:#1F2B24;--gold:#D8B25A;
+    --gold-2:#E4C578;--green:#4FB088;--good:#58B47C;--warn:#D6A84A;--guilloche:79,176,136;
+    --shadow:0 30px 70px -30px rgba(0,0,0,.7),0 6px 20px -10px rgba(0,0,0,.6);
+    color-scheme:dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  #app {
+    min-height: 100dvh;
+    background:
+      radial-gradient(120% 90% at 50% -10%, var(--bg-2) 0%, var(--bg) 60%);
+    color: var(--ink);
+    font-family: var(--f-body);
+    display: flex;
+    flex-direction: column;
+    padding: clamp(14px, 3vw, 30px);
+    gap: clamp(14px, 2.4vw, 22px);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 14px;
+  }
+  .brand { display: flex; align-items: baseline; gap: 12px; }
+  .wordmark {
+    font-family: var(--f-mono);
+    font-weight: 600;
+    letter-spacing: .42em;
+    font-size: clamp(15px, 2.6vw, 20px);
+    color: var(--ink);
+    text-indent: .42em;
+  }
+  .wordmark b { color: var(--gold-2); font-weight: 600; }
+  .tagline {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: clamp(12px, 2.2vw, 15px);
+    color: var(--muted);
+  }
+  .tagline .rule { color: var(--faint); font-style: normal; padding: 0 .4em; }
+
+  .stats { display: flex; gap: 20px; align-items: center; }
+  .stat { text-align: right; line-height: 1.05; }
+  .stat .num {
+    font-family: var(--f-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(17px, 3vw, 22px);
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .stat .num .slash { color: var(--faint); font-weight: 400; }
+  .stat .lbl {
+    font-family: var(--f-mono);
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: .18em;
+    color: var(--faint);
+    margin-top: 3px;
+  }
+  .stat.known .num { color: var(--gold-2); }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: clamp(14px, 3vw, 26px);
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  /* ---------- Language switch ---------- */
+  .lang-switch {
+    display: inline-flex;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .lang-switch .lang {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    letter-spacing: .04em;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    padding: 5px 12px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color .18s, background .18s;
+  }
+  .lang-switch .lang[lang="km"] { font-family: var(--f-km, var(--f-mono)); font-size: 13px; }
+  .lang-switch .lang:hover { color: var(--ink); }
+  .lang-switch .lang:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 2px; }
+  .lang-switch .lang[aria-pressed="true"] {
+    color: var(--ink);
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgba(0,0,0,.14);
+  }
+  :root[data-theme="dark"] .lang-switch .lang[aria-pressed="true"] { color: var(--gold-2); }
+
+  /* ---------- Filters ---------- */
+  .filters {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+    -ms-overflow-style: none;
+    scroll-snap-type: x proximity;
+  }
+  .filters::-webkit-scrollbar { height: 5px; }
+  .filters::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .chip {
+    flex: 0 0 auto;
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .18s, background .18s, border-color .18s, transform .12s;
+    scroll-snap-align: start;
+  }
+  .chip:hover { color: var(--ink); border-color: var(--faint); }
+  .chip:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 2px; }
+  .chip[aria-pressed="true"] {
+    color: var(--bg);
+    background: var(--green);
+    border-color: var(--green);
+  }
+  :root[data-theme="dark"] .chip[aria-pressed="true"],
+  .chip[aria-pressed="true"] { color: #F7FBF3; }
+  @media (prefers-color-scheme: dark) {
+    .chip[aria-pressed="true"] { color: #06110C; }
+  }
+  :root[data-theme="dark"] .chip[aria-pressed="true"] { color: #06110C; }
+  :root[data-theme="light"] .chip[aria-pressed="true"] { color: #F7FBF3; }
+  .chip .c-num {
+    color: inherit;
+    opacity: .55;
+    margin-left: 7px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Stage ---------- */
+  .stage {
+    position: relative;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 440px;
+    perspective: 1800px;
+  }
+  #guilloche {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: .5;
+  }
+
+  /* ---------- Card ---------- */
+  .card {
+    position: relative;
+    width: min(620px, 100%);
+    z-index: 2;
+    cursor: pointer;
+    animation: enter .5s cubic-bezier(.2,.75,.25,1) both;
+  }
+  .card:focus-visible { outline: none; }
+  .card:focus-visible .face { outline: 2px solid var(--gold-2); outline-offset: 4px; }
+
+  .card-inner {
+    display: grid;
+    transform-style: preserve-3d;
+    transition: transform .62s cubic-bezier(.5,.05,.2,1);
+  }
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+
+  .face {
+    grid-area: 1 / 1;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    background:
+      linear-gradient(158deg, var(--surface) 0%, var(--surface-2) 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    box-shadow: var(--shadow);
+    padding: clamp(22px, 4vw, 36px);
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+    overflow: hidden;
+  }
+  /* engraved inner keyline */
+  .face::before {
+    content: "";
+    position: absolute;
+    inset: 9px;
+    border: 1px solid var(--line-soft);
+    border-radius: calc(var(--r) - 6px);
+    pointer-events: none;
+  }
+  /* gold corner tick, banknote style */
+  .face::after {
+    content: "";
+    position: absolute;
+    top: 16px; left: 16px;
+    width: 22px; height: 22px;
+    border-top: 2px solid var(--gold-2);
+    border-left: 2px solid var(--gold-2);
+    opacity: .8;
+    border-top-left-radius: 5px;
+  }
+  .back { transform: rotateY(180deg); }
+
+  .face-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .serial {
+    font-family: var(--f-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    letter-spacing: .12em;
+    color: var(--faint);
+  }
+  .serial b { color: var(--gold-2); font-weight: 600; }
+  .cat-tag {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .16em;
+    color: var(--green);
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    padding: 4px 9px;
+    border-radius: 999px;
+  }
+
+  /* Front */
+  .front-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 10px 4px;
+  }
+  .kicker {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .concept {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: clamp(26px, 5.4vw, 40px);
+    line-height: 1.12;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+  .concept .big-n {
+    display: block;
+    font-size: clamp(40px, 9vw, 66px);
+    color: var(--gold-2);
+    line-height: 1;
+    margin-bottom: 6px;
+    font-variant-numeric: lining-nums;
+  }
+
+  /* Back */
+  .back-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+    padding-top: 20px;
+  }
+  .back-title {
+    font-family: var(--f-display);
+    font-size: clamp(19px, 3.6vw, 25px);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .explain {
+    font-size: clamp(14.5px, 2.5vw, 16px);
+    line-height: 1.62;
+    color: var(--muted);
+    max-width: 56ch;
+  }
+  .lens {
+    margin-top: auto;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--gold-2);
+    border-radius: var(--r-s);
+    padding: 13px 16px;
+  }
+  .lens .lens-lbl {
+    font-family: var(--f-mono);
+    font-size: 9.5px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 6px;
+  }
+  .lens .lens-lbl::before { content: "◆"; font-size: 8px; }
+  .lens p {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: clamp(14px, 2.5vw, 16px);
+    line-height: 1.45;
+    color: var(--ink);
+  }
+
+  .flip-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    position: relative;
+    z-index: 1;
+  }
+  .flip-hint svg { width: 14px; height: 14px; opacity: .8; }
+  .known-flag {
+    position: absolute;
+    top: 14px; right: 16px;
+    z-index: 2;
+    font-family: var(--f-mono);
+    font-size: 9.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--good);
+    display: none;
+    align-items: center;
+    gap: 5px;
+  }
+  .card.known .known-flag { display: flex; }
+  .known-flag::before { content: "✓"; }
+
+  /* ---------- Controls ---------- */
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .progress {
+    width: min(620px, 100%);
+    height: 4px;
+    background: var(--line-soft);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 auto;
+  }
+  .progress i {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--green), var(--gold-2));
+    border-radius: 4px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+  }
+  .btn {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-s);
+    padding: 10px 15px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform .12s, border-color .18s, background .18s, color .18s;
+    user-select: none;
+  }
+  .btn svg { width: 15px; height: 15px; }
+  .btn:hover { border-color: var(--faint); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 2px; }
+  .btn.primary {
+    background: var(--green);
+    border-color: var(--green);
+    color: #F7FBF3;
+    min-width: 130px;
+    justify-content: center;
+  }
+  @media (prefers-color-scheme: dark) { .btn.primary { color: #06110C; } }
+  :root[data-theme="dark"] .btn.primary { color: #06110C; }
+  :root[data-theme="light"] .btn.primary { color: #F7FBF3; }
+  .btn.primary:hover { filter: brightness(1.06); }
+  .btn.icon { padding: 10px 12px; }
+  .btn.mark[aria-pressed="true"] {
+    background: var(--gold-2);
+    border-color: var(--gold-2);
+    color: #1c1405;
+  }
+  .btn.mark[aria-pressed="true"] svg { color: #1c1405; }
+
+  .kbd-help {
+    text-align: center;
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    letter-spacing: .06em;
+    color: var(--faint);
+  }
+  .kbd-help kbd {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: inherit;
+    color: var(--muted);
+    margin: 0 1px;
+  }
+
+  @keyframes enter {
+    from { opacity: 0; transform: translateY(14px) scale(.985); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @media (max-width: 560px) {
+    .stats { gap: 14px; }
+    .face { min-height: 380px; }
+    .btn .txt { display: none; }
+    .btn.primary .txt { display: inline; }
+    .kbd-help { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: none; }
+    .card-inner { transition: transform .001s; }
+    .progress i { transition: none; }
+    * { scroll-behavior: auto; }
+  }
+</style>
+
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="wordmark">LE<b>D</b>GER</div>
+      <div class="tagline" id="tagline">How banking works<span class="rule">/</span>100 cards to the C‑suite</div>
+    </div>
+    <div class="topbar-right">
+      <div class="lang-switch" id="lang-switch" role="group" aria-label="Language">
+        <button class="lang" data-lang="en" aria-pressed="true" lang="en">EN</button>
+        <button class="lang" data-lang="ru" aria-pressed="false" lang="ru">РУ</button>
+        <button class="lang" data-lang="km" aria-pressed="false" lang="km">ខ្មែរ</button>
+      </div>
+      <div class="stats">
+        <div class="stat position">
+          <div class="num"><span id="pos">1</span><span class="slash"> / </span><span id="deck-total">100</span></div>
+          <div class="lbl" id="lbl-card">Card</div>
+        </div>
+        <div class="stat known">
+          <div class="num"><span id="known-count">0</span><span class="slash"> / </span>100</div>
+          <div class="lbl" id="lbl-known">Mastered</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="filters" id="filters" aria-label="Filter by module"></nav>
+
+  <section class="stage">
+    <canvas id="guilloche" aria-hidden="true"></canvas>
+
+    <div class="card" id="card" tabindex="0" role="button" aria-label="Flashcard. Activate to reveal the answer.">
+      <div class="known-flag" aria-hidden="true"><span id="known-flag-txt">Mastered</span></div>
+      <div class="card-inner">
+        <!-- FRONT -->
+        <div class="face front">
+          <div class="face-head">
+            <span class="serial">№ <b id="f-serial">001</b> · 100</span>
+            <span class="cat-tag" id="f-cat">Module</span>
+          </div>
+          <div class="front-body">
+            <div class="kicker" id="f-kicker">Concept</div>
+            <div class="concept"><span class="big-n" id="f-bign">01</span><span id="f-concept">…</span></div>
+          </div>
+          <div class="flip-hint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+            <span id="flip-hint-txt">Reveal the detail</span>
+          </div>
+        </div>
+        <!-- BACK -->
+        <div class="face back">
+          <div class="face-head">
+            <span class="serial">№ <b id="b-serial">001</b> · 100</span>
+            <span class="cat-tag" id="b-cat">Module</span>
+          </div>
+          <div class="back-body">
+            <h2 class="back-title" id="b-title">Title</h2>
+            <p class="explain" id="b-explain">…</p>
+            <div class="lens">
+              <div class="lens-lbl" id="lens-lbl">C‑Suite Lens</div>
+              <p id="b-lens">…</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="progress" aria-hidden="true"><i id="progress-bar"></i></div>
+
+  <div class="controls">
+    <button class="btn icon" id="prev" aria-label="Previous card" title="Previous (←)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button class="btn primary" id="flip" aria-label="Flip card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7h13l-3-3M21 17H8l3 3"/></svg>
+      <span class="txt" id="txt-flip">Flip</span>
+    </button>
+    <button class="btn icon" id="next" aria-label="Next card" title="Next (→)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <button class="btn mark" id="mark" aria-pressed="false" aria-label="Mark as mastered" title="Master (K)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>
+      <span class="txt" id="txt-master">Master</span>
+    </button>
+    <button class="btn" id="shuffle" aria-label="Shuffle deck" title="Shuffle (S)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+      <span class="txt" id="txt-shuffle">Shuffle</span>
+    </button>
+  </div>
+
+  <div class="kbd-help" id="kbd-help">
+    <kbd>←</kbd> <kbd>→</kbd> navigate · <kbd>Space</kbd> flip · <kbd>K</kbd> master · <kbd>S</kbd> shuffle
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===================== CURRICULUM DATA ===================== */
+  const CARDS = [
+    // ---- Module 1: Interest & Money ----
+    ["Interest & Money","How interest forms","Interest is the price of time. A dollar today is worth more than a dollar tomorrow because it can be put to work, and because tomorrow carries risk and inflation. Interest is what a lender charges to give up that time‑value, to be compensated for expected inflation, and to be paid for the chance the money isn't returned.","Every product a bank sells is, at bottom, renting out time and risk."],
+    ["Interest & Money","Simple vs compound interest","Simple interest is charged only on the original principal. Compound interest is charged on principal plus all accumulated interest, so it grows exponentially rather than linearly. Over long horizons, compounding dominates — which is why compounding frequency and time matter more than the headline rate.","Small rate or fee differences compound into enormous value across a book's life."],
+    ["Interest & Money","Nominal vs real rates","The nominal rate is the stated rate; the real rate strips out inflation (real ≈ nominal − inflation — the Fisher relation). A 6% loan when inflation runs at 5% earns only ~1% of real purchasing power.","Margins that look healthy in nominal terms can be thin — or negative — in real terms."],
+    ["Interest & Money","APR vs APY (effective yield)","APR is the simple annualized rate and ignores intra‑year compounding; APY (or EAR) folds compounding in, so it's always ≥ APR. 12% compounded monthly is really ~12.68%. Disclosure rules dictate which one customers must be shown.","How you quote a rate changes the number the customer sees — and what you actually earn."],
+    ["Interest & Money","Present value & discounting","Present value converts future cash into today's money by dividing by (1+r)ᵗ — the discount factor. It is the engine behind loan pricing, bond valuation, and every 'what is this future stream worth now?' question.","Discounting is how a bank puts a price on anything that pays out over time."],
+    ["Interest & Money","The risk‑free rate","The theoretical return on a zero‑default investment, proxied by short‑term government debt like Treasury bills. It's the floor on which every other rate is built: a risky rate = risk‑free rate + spreads for credit, liquidity, and term.","When the risk‑free rate moves, every asset on the balance sheet reprices."],
+    ["Interest & Money","Inflation & purchasing power","Inflation erodes what money can buy over time. Banks feel it twice: it eats the real value of the fixed‑rate loans they hold, and it drives the central‑bank rate decisions that reset their funding costs.","Inflation quietly transfers value between a bank's borrowers and its depositors."],
+    ["Interest & Money","Compounding frequency","The more often interest compounds — annually, then monthly, daily, continuously — the higher the effective yield for the same nominal rate. Continuous compounding uses eʳᵗ and underpins derivatives pricing.","Frequency is a lever: it changes real economics without touching the advertised rate."],
+    ["Interest & Money","Fixed vs floating rates","A fixed rate is locked for the term; a floating rate resets periodically against a benchmark (SOFR, EURIBOR) plus a margin. Fixed rates push rate risk onto the lender; floating rates push it onto the borrower.","The fixed/floating mix on the book decides who bleeds when rates move."],
+    ["Interest & Money","Maturity & the yield curve","The yield curve plots interest rate against maturity. It normally slopes up — longer means more yield for term and inflation risk — while an inverted curve (short above long) has historically warned of recession.","The curve's slope is, in one line, the weather forecast for bank margins."],
+
+    // ---- Module 2: The Bank Model ----
+    ["The Bank Model","Borrow short, lend long","Banks take in short‑term, redeemable deposits and turn them into long‑term, illiquid loans, capturing the difference. This 'maturity transformation' is the essential service banks provide — and their essential fragility.","The business is a bet that not everyone will ask for their money back at once."],
+    ["The Bank Model","Net interest margin (NIM)","NIM = (interest earned − interest paid) ÷ average interest‑earning assets, typically 1.5–4%. It's the core profitability gauge of the lending engine, and it widens when asset yields rise faster than funding costs.","A few basis points of NIM across a trillion‑dollar book is very real money."],
+    ["The Bank Model","Interest vs non‑interest income","Net interest income comes from the lending spread; non‑interest income from fees, commissions, trading, and services. The blend defines how rate‑sensitive — and how diversified — earnings are.","Boards prize fee income because it keeps paying when rates squeeze the spread."],
+    ["The Bank Model","Fee & commission income","Money earned for services rather than for lending: account and card fees, advisory, asset management, transaction charges. It is capital‑light and sticky, so the market awards it a valuation premium.","Fee businesses turn a balance‑sheet lender into a services franchise."],
+    ["The Bank Model","Financial intermediation","Banks sit between savers and borrowers, resolving mismatches in size, maturity, and risk appetite, and screening and monitoring borrowers that savers cannot. That intermediation is the value they add.","Disintermediation — fintech, capital markets, stablecoins — attacks exactly this middle."],
+    ["The Bank Model","The spread","The gap between what a bank earns on assets and pays on liabilities. Almost everything in banking is engineered to widen this spread, protect it, or price risk correctly into it.","Grow the book, protect the spread, control the losses — the whole game in six words."],
+    ["The Bank Model","Fractional reserve & money creation","Banks hold only a fraction of deposits in reserve and lend the rest; each loan becomes a new deposit elsewhere, which is lent again. Collectively the banking system creates money through lending, bounded by capital and reserves.","Banks don't merely move money — together they manufacture it."],
+    ["The Bank Model","Deposits as funding","Customer deposits are a bank's cheapest, stickiest funding — often near‑zero cost and slow to leave. The quality of the deposit franchise is one of banking's strongest competitive moats.","Cheap, loyal deposits are the crown jewels; losing them raises the cost of everything."],
+    ["The Bank Model","Wholesale vs retail funding","Retail funding is many small, sticky deposits. Wholesale funding is large, rate‑sensitive money from markets and institutions that can flee fast. Over‑reliance on wholesale funding was central to the 2008 failures.","Funding mix is a survival question, not merely a cost question."],
+    ["The Bank Model","Cost of funds","The blended rate a bank pays across all its funding — deposits, debt, wholesale. It sets the floor under loan pricing: lend below cost of funds plus expenses plus expected loss and you lose money.","You cannot out‑grow a broken cost of funds."],
+
+    // ---- Module 3: Balance Sheet ----
+    ["Balance Sheet","Reading a bank balance sheet","For a bank the balance sheet is inverted from a normal firm: loans are assets (money owed to it), deposits are liabilities (money it owes). Equity is the thin sliver in between that absorbs losses.","A bank essentially is its balance sheet — the P&L is just what that balance sheet earns."],
+    ["Balance Sheet","Assets & liabilities, mirrored","Your deposit is your asset but the bank's liability; your loan is the bank's asset but your liability. Grasping this mirror is the key to reading any bank's accounts.","One party's asset is always another's liability — banks industrialize that fact."],
+    ["Balance Sheet","Equity / capital","Shareholders' funds: assets minus liabilities. It is the buffer that absorbs losses before depositors are touched, and the base against which returns (ROE) are measured — typically only 5–10% of the balance sheet.","Capital is both the shock absorber and the denominator of the scorecard."],
+    ["Balance Sheet","Loan‑book composition","The mix of the asset side — mortgages, corporate loans, consumer credit, cards — sliced by sector and geography. Its concentration and quality drive both the yield earned and the losses suffered.","Show me the loan book's concentrations and I'll show you where the next crisis lands."],
+    ["Balance Sheet","Off‑balance‑sheet items","Commitments and exposures not (yet) on the balance sheet: undrawn credit lines, guarantees, letters of credit, derivatives. They carry real risk and can crash onto the balance sheet in a crisis.","What's off the balance sheet has ended more banks than what's on it."],
+    ["Balance Sheet","The income statement","Top line is net interest income plus fee income plus trading income. Subtract operating costs and loan‑loss provisions to reach pre‑tax profit. Provisions are the swing factor that turns good years bad.","Revenue is chosen; provisions are revealed — that's where the truth hides."],
+    ["Balance Sheet","Return on assets (ROA)","Net income ÷ total assets — how efficiently the whole balance sheet generates profit. Around 1% is solid for a bank; low ROA is inherent, and banks make it up on volume and leverage.","Thin ROA is normal; the leverage stacked on top is what produces equity returns."],
+    ["Balance Sheet","Return on equity (ROE)","Net income ÷ shareholders' equity — the headline profitability metric. ROE ≈ ROA × leverage, so a 1% ROA levered 10× yields a 10% ROE.","ROE only creates value when it clears the cost of equity — the number that rules the C‑suite."],
+    ["Balance Sheet","Leverage","Banks fund assets mostly with debt and deposits, not equity, so assets can be 10–20× equity. Leverage magnifies ROE — and losses: a 5% asset loss at 15× leverage wipes out the equity.","Leverage is the amplifier — it makes good times great and bad times fatal."],
+    ["Balance Sheet","Book value vs market value","Book value is accounting equity; market value is what investors will pay. A price‑to‑book above 1 means the market believes the bank earns above its cost of equity; below 1 signals doubt.","A sub‑1 price‑to‑book is the market saying your ROE doesn't cover its risk."],
+
+    // ---- Module 4: Lending & Credit ----
+    ["Lending & Credit","The credit process","Underwriting: assess the borrower, structure the loan, price for risk, approve within limits, then monitor to maturity. Disciplined origination is the cheapest form of risk management there is.","Losses are made at origination and merely recognized later."],
+    ["Lending & Credit","The 5 Cs of credit","Character (track record), Capacity (cash flow to repay), Capital (the borrower's own stake), Collateral (backup security), and Conditions (economy and purpose). The timeless checklist of whom to lend to.","Frameworks age; the 5 Cs still explain most defaults."],
+    ["Lending & Credit","Secured vs unsecured","Secured loans are backed by collateral the bank can seize (mortgages, auto loans); unsecured loans rely only on the promise to repay (cards, personal loans) and so carry higher rates and losses.","The absence of collateral must be priced — or it becomes a loss."],
+    ["Lending & Credit","Collateral & loan‑to‑value","LTV = loan ÷ collateral value. An 80% LTV mortgage leaves a 20% equity cushion before the bank is underwater. Falling collateral values — a housing crash — turn once‑safe LTVs dangerous.","Collateral is only as good as its value in the exact stress you'll need it."],
+    ["Lending & Credit","Credit risk & probability of default","Credit risk is the chance a borrower won't repay. PD is the estimated probability of default over a horizon, usually one year — the first input to sizing expected loss.","PD is a forecast, and forecasts fail precisely when everyone defaults together."],
+    ["Lending & Credit","LGD & EAD","Loss Given Default is the fraction not recovered after default, net of collateral. Exposure at Default is how much is owed when default hits. With PD, they size the loss.","Recoveries (1 − LGD) are where good workout teams quietly earn their keep."],
+    ["Lending & Credit","Expected loss (PD × LGD × EAD)","Expected loss = probability of default × loss given default × exposure at default. It's the average loss you plan for and price into the loan — covered by provisions and margin, not by capital.","Expected loss is a cost of doing business; unexpected loss is what capital exists for."],
+    ["Lending & Credit","Loan‑loss provisions","Reserves set aside for expected credit losses. Modern rules — IFRS 9 and CECL — require booking expected losses on a forward‑looking basis rather than waiting for default, making provisions more volatile.","Provisioning timing shifts earnings between years — watch it like a hawk."],
+    ["Lending & Credit","Non‑performing loans (NPLs)","Loans where the borrower has stopped paying, typically 90+ days overdue. The NPL ratio is a core asset‑quality gauge; rising NPLs eat capital and signal a deteriorating book.","NPL trends lead earnings — they tell you next year's provisions today."],
+    ["Lending & Credit","Risk‑based loan pricing","Price = cost of funds + operating cost + expected loss + a capital charge + target margin. Riskier borrowers must pay more to cover their higher expected loss and heavier capital use.","Underprice risk to win volume and you're simply buying losses at a discount."],
+
+    // ---- Module 5: Risk ----
+    ["Risk","The four main risk types","Credit (borrowers don't pay), Market (prices move against you), Liquidity (you can't fund or settle), and Operational (people, process, systems fail). Nearly every bank loss maps to one of these four.","Different risks, one hard truth: they all correlate viciously in a crisis."],
+    ["Risk","Concentration risk","Too much exposure to a single borrower, sector, geography, or collateral type. Diversification is the only free lunch; concentration is how 'safe' books blow up — energy, real estate, one counterparty.","Every large bank loss has a concentration story behind it."],
+    ["Risk","Market risk & VaR","The risk that market prices — rates, FX, equities, credit spreads — move against trading positions. Value at Risk estimates the maximum loss over a horizon at a confidence level, but is blind to the tail beyond it.","VaR forecasts the weather, not the once‑in‑a‑decade storm — never confuse the two."],
+    ["Risk","Liquidity risk","The risk of being unable to meet obligations as they fall due without fire‑selling assets. A bank can be perfectly solvent yet fail if it cannot fund itself — liquidity kills faster than credit.","Solvency is slow; a liquidity run is measured in hours."],
+    ["Risk","Interest‑rate risk in the banking book","IRRBB is the risk that rate moves damage the value or income of non‑traded assets and liabilities — for example, funding long fixed‑rate mortgages with cheap deposits that suddenly reprice upward.","Silicon Valley Bank was, at its core, an unhedged IRRBB failure."],
+    ["Risk","Operational risk","Loss from failed processes, people, systems, or external events — fraud, cyber, outages, mis‑selling, legal. Hard to quantify, unbounded in the tail, and increasingly the dominant risk in digital banking.","The next big loss may not be a bad loan — it may be a breach or a fine."],
+    ["Risk","Model risk","The risk that the models banks rely on to price, value, and measure risk are simply wrong — bad assumptions, bad data, or use outside their design. 2008 was, in part, a model‑risk event.","A precise number from a wrong model is more dangerous than admitted uncertainty."],
+    ["Risk","Three lines of defense","Line 1: the business owns its risk. Line 2: risk and compliance set limits and challenge. Line 3: internal audit checks it all works. This is the governance backbone of risk control.","When the three lines blur, accountability — and control — quietly disappear."],
+    ["Risk","Risk appetite & RAROC","Risk appetite is the board's stated limit on risk taken for return. RAROC — risk‑adjusted return on capital — measures return per unit of risk capital, so businesses compete on efficiency, not just size.","Growth that ignores risk‑adjusted return destroys value while looking like success."],
+    ["Risk","Stress testing","Simulating severe‑but‑plausible scenarios — recession, rate shock, market crash — to see whether capital and liquidity survive. Regulators mandate it (CCAR, EBA) and use it to gate dividends.","Stress tests are where the board learns what it can actually afford to lose."],
+
+    // ---- Module 6: Capital & Rules ----
+    ["Capital & Rules","Why capital matters","Capital is the equity buffer that absorbs unexpected losses so depositors and the system don't. Too little and a shock causes insolvency; too much and returns suffer. Calibrating it is the central regulatory tension.","Capital is the price of being allowed to take deposits."],
+    ["Capital & Rules","The Basel framework","International standards — Basel I, II, and III — setting minimum capital, liquidity, and leverage rules for banks. Basel III, born after 2008, sharply raised the quality and quantity of capital and added liquidity rules.","Basel is the global rulebook that shapes what every bank can and cannot do."],
+    ["Capital & Rules","Risk‑weighted assets (RWA)","Assets scaled by riskiness: cash near 0%, mortgages ~35%, unsecured corporate 100%+. Capital ratios are measured against RWA, so risky lending consumes far more capital than safe lending.","RWA is the currency of capital — where you lend decides how much you burn."],
+    ["Capital & Rules","Capital ratios (CET1)","CET1 is the highest‑quality capital — common equity — divided by RWA, the headline solvency ratio; regulators demand minimums plus buffers, often 10%+. Tier 1 and Total capital add lower‑quality layers.","CET1 is the single number analysts, regulators, and rating agencies check first."],
+    ["Capital & Rules","The leverage ratio","Tier 1 capital ÷ total exposure, un‑risk‑weighted. It's a backstop to the RWA ratios that can't be gamed through favorable risk‑weighting — it caps total leverage regardless of claimed risk.","The leverage ratio is the 'no matter how safe you think you are' floor."],
+    ["Capital & Rules","Liquidity Coverage Ratio (LCR)","Requires enough high‑quality liquid assets to survive a 30‑day severe stress outflow. A direct response to 2008's funding runs — banks must hold a liquidity cushion, not merely capital.","LCR is the rule that says: survive the first month entirely on your own."],
+    ["Capital & Rules","Net Stable Funding Ratio (NSFR)","Requires stable funding to cover longer‑term (one‑year) assets, discouraging over‑reliance on flighty short‑term money. It is the structural complement to the short‑term LCR.","NSFR forces the maturity‑transformation bet to be funded responsibly."],
+    ["Capital & Rules","Capital buffers","Extra capital above the minimums: a conservation buffer (always on), a countercyclical buffer (raised in booms), and a G‑SIB surcharge for systemic banks. Breaching them restricts dividends and bonuses before failure.","Buffers are designed to be used in stress — hoarding them defeats the purpose."],
+    ["Capital & Rules","Deposit insurance","A government guarantee of deposits up to a limit — $250k FDIC, €100k in the EU. It stops rational bank runs by removing the incentive to flee, arguably the cheapest financial‑stability tool ever invented.","Insurance buys calm; its limit is exactly where runs can still begin (see 2023)."],
+    ["Capital & Rules","Lender of last resort","The central bank stands ready to lend to solvent‑but‑illiquid banks against good collateral, stopping panics from becoming collapses. Bagehot's rule: lend freely, at a penalty rate, on good collateral.","The backstop that makes fractional‑reserve banking survivable — and moral‑hazard‑prone."],
+
+    // ---- Module 7: Treasury & ALM ----
+    ["Treasury & ALM","Asset‑liability management","ALM is the central function that matches the maturities, rates, and currencies of assets and liabilities to manage interest‑rate and liquidity risk across the whole balance sheet.","ALM is where the bank decides how much of the borrow‑short/lend‑long bet to run."],
+    ["Treasury & ALM","Banking book vs trading book","The banking book holds loans and deposits to maturity, accrual‑accounted. The trading book holds positions to trade, marked‑to‑market daily. They carry different risks, capital rules, and accounting.","The book an asset sits in changes its capital, its accounting, and its risk owner."],
+    ["Treasury & ALM","Funds transfer pricing (FTP)","The internal 'price' treasury charges lending units for funds and pays deposit‑gathering units for raising them. It splits the spread fairly and reveals which businesses truly create value.","Get FTP wrong and you reward the wrong businesses and misprice the whole book."],
+    ["Treasury & ALM","Interest‑rate gap & duration","Gap analysis measures the mismatch between assets and liabilities repricing in a period; duration measures price sensitivity to rate moves. Both quantify how a rate shock hits income and value.","A large unhedged gap is a leveraged bet on where rates go next."],
+    ["Treasury & ALM","Hedging with swaps","Interest‑rate swaps let a bank convert fixed‑rate exposure into floating (or vice versa) without touching the underlying loans, neutralizing rate risk cheaply and flexibly.","Derivatives aren't the risk — failing to use them to hedge often is."],
+    ["Treasury & ALM","Liquidity management","Holding a buffer of liquid assets and diversified funding so the bank can meet outflows in stress without fire sales. It's managed daily through cash‑flow forecasting and the liquidity buffer.","Liquidity is cheap to hold and priceless to have when markets freeze."],
+    ["Treasury & ALM","Policy rate & transmission","The central bank sets a policy rate; it flows through money markets into deposit and loan rates, and thus into bank margins and the wider economy. This transmission is monetary policy in action.","When the central bank moves, treasury decides how much of it you pass on."],
+    ["Treasury & ALM","Repo & money markets","Short‑term secured borrowing where securities are sold and repurchased — the plumbing banks use to fund positions and manage daily liquidity. A repo‑market freeze is a system‑wide seizure.","The repo market is invisible until it stops — then it is the whole story."],
+    ["Treasury & ALM","Capital planning (ICAAP)","The bank's own forward‑looking, stress‑tested assessment of how much capital its risks require, reviewed by regulators. It links strategy, risk, and capital in a single process.","ICAAP is where 'how much risk can we run' meets 'how much capital do we have'."],
+    ["Treasury & ALM","Capital return & dividends","Deciding how much profit to retain — to grow and buffer — versus return through dividends and buybacks. Regulators can block returns when capital or stress‑test results are weak.","Returning capital signals strength; being forced to cut it screams weakness."],
+
+    // ---- Module 8: Payments & Ops ----
+    ["Payments & Ops","Clearing & settlement","Clearing is agreeing who owes what; settlement is the actual transfer of funds. A payment you 'send' instantly may clear in seconds but settle hours or days later.","Between the click and settlement sit real risk — and real float."],
+    ["Payments & Ops","Correspondent banking","Banks hold accounts with each other to move money across borders and currencies. A nostro is 'our' account held with them; a vostro is 'your' account held with us. It's the backbone of cross‑border payments.","This network is slow and costly — exactly what fintech and stablecoins target."],
+    ["Payments & Ops","Cards: issuing, acquiring, interchange","Issuers give cards to consumers; acquirers sign up merchants; interchange is the network‑set fee that flows from acquirer to issuer on each swipe. It is a multi‑sided money machine.","Interchange is a quiet, huge, and heavily regulated profit pool."],
+    ["Payments & Ops","Instant / real‑time payments","Systems like FedNow, UPI, and SEPA Instant clear and settle in seconds, 24/7. They compress float, accelerate fraud, and pressure the fees of the legacy rails.","Real‑time payments remove float — a revenue line and a risk window vanish together."],
+    ["Payments & Ops","SWIFT & cross‑border","SWIFT is the messaging network banks use to instruct cross‑border payments — it moves messages, not money. Slow, layered, and costly, it's the friction fintech and CBDCs aim to remove.","SWIFT is messaging, not money — a distinction that explains most cross‑border pain."],
+    ["Payments & Ops","RTGS & central‑bank money","Real‑Time Gross Settlement systems settle large payments individually and irrevocably in central‑bank money — the ultimate risk‑free settlement asset — and form the core of national payment systems.","Central‑bank money is the only truly final settlement — everything else is a promise."],
+    ["Payments & Ops","AML, KYC & fraud","Know Your Customer and Anti‑Money‑Laundering rules require banks to verify identity and monitor for illicit flows. Failures bring enormous fines and reputational damage.","Compliance isn't overhead — one AML failure can cost billions and a banking license."],
+    ["Payments & Ops","Reconciliation & the back office","The unglamorous work of matching records so every transaction balances. Breaks here signal fraud, error, or loss; strong operations are a genuine competitive edge.","Operational excellence rarely makes headlines but constantly prevents losses."],
+    ["Payments & Ops","Float & settlement risk","Float is money in transit that neither party can use; settlement (Herstatt) risk is that one side pays and the other fails before completing. Timing gaps are a real, historic source of loss.","The gap between pay and receive is where a counterparty's failure becomes your loss."],
+    ["Payments & Ops","Cost‑to‑income ratio","Operating costs ÷ income — the efficiency benchmark. Below ~50% is strong; above ~65% signals bloat. It's the lever that technology and scale most directly move.","Cost‑to‑income is the metric activists and boards use to judge management's grip."],
+
+    // ---- Module 9: Markets & Fees ----
+    ["Markets & Fees","Investment vs commercial banking","Commercial banks take deposits and lend; investment banks advise, underwrite, and trade for corporates and institutions. Universal banks do both under one roof, with walls between them.","The two mix funding stability with fee upside — and blend their risks too."],
+    ["Markets & Fees","Capital markets: debt & equity","Instead of lending, banks help clients raise money directly from investors — issuing bonds (debt) or shares (equity, IPOs). The bank earns fees while taking little balance‑sheet risk.","Capital‑markets fees are prized: high margin, capital‑light, and cyclical."],
+    ["Markets & Fees","Securitization","Pooling loans — mortgages, cards, auto — and selling them as tradable securities, moving risk off the balance sheet and freeing capital to lend again. Misused, it fueled the 2008 crisis.","A powerful capital tool that becomes a weapon when the underlying quality is hidden."],
+    ["Markets & Fees","Wealth & asset management","Managing money for individuals (wealth) and institutions (asset management) for recurring fees. Capital‑light, sticky, and scalable — the segment banks covet most.","AUM‑based fees are the annuity every bank CEO wants more of."],
+    ["Markets & Fees","Trade finance","Financing and de‑risking global trade — letters of credit, guarantees, supply‑chain finance — so exporters and importers can trust each other. Old, essential, and fee‑rich.","Trade finance greases global commerce and ties clients in with sticky, low‑loss business."],
+    ["Markets & Fees","Treasury & FX services","Helping clients manage currency, rates, and liquidity — FX conversion, hedging, cash management. It's high‑volume, recurring, relationship‑anchoring revenue.","These services deepen client relationships and throw off steady, low‑risk fees."],
+    ["Markets & Fees","Derivatives basics","Contracts whose value derives from an underlying — rate, FX, commodity, equity. Forwards lock a price, options grant a right, swaps exchange cash flows. Tools to hedge or to speculate.","Derivatives transfer risk — the danger is never knowing who finally holds it."],
+    ["Markets & Fees","Trading & market‑making","Banks quote buy and sell prices, earning the bid‑ask spread and providing liquidity. It's profitable but volatile and capital‑hungry; post‑2008 rules curbed proprietary risk‑taking.","Trading income flatters the good years and can detonate the bad ones."],
+    ["Markets & Fees","Universal vs specialist banks","Universal banks span retail, corporate, investment, and markets; specialists focus — a card issuer, a private bank. Breadth diversifies revenue but adds complexity and systemic risk.","Diversification versus focus is a perennial strategic and valuation debate."],
+    ["Markets & Fees","Fee‑income diversification","Spreading revenue across lending and multiple fee streams so earnings survive any single shock or rate cycle. Investors pay more for diversified, recurring income.","The market rewards durable fee income with a higher multiple than volatile spread income."],
+
+    // ---- Module 10: Strategy & Value ----
+    ["Strategy & Value","What drives bank valuation","Banks trade on price‑to‑book — tied to ROE versus cost of equity — more than on P/E. If ROE exceeds COE, the stock trades above book; if not, below. Growth, risk, and returns set the multiple.","The whole equity story reduces to: does your ROE beat your cost of equity?"],
+    ["Strategy & Value","Cost of equity & the ROE > COE rule","Cost of equity is the return shareholders demand for the risk they bear. A bank creates value only when ROE exceeds COE; earning below it destroys value even while reporting a profit.","'Profitable' and 'value‑destroying' aren't opposites — a bank can be both at once."],
+    ["Strategy & Value","Economic profit / EVA","Profit after charging for all capital used, including equity at its cost. It exposes whether a business truly adds value or merely consumes expensive capital to look busy.","Accounting profit flatters; economic profit tells the truth about value."],
+    ["Strategy & Value","The efficiency lever","Cutting cost‑to‑income — through automation, scale, and simplification — flows almost directly to the bottom line and ROE. It's the most controllable value lever management holds.","When revenue is hard to grow, efficiency is the lever a CEO can actually pull."],
+    ["Strategy & Value","Digital & fintech disruption","Fintechs and big tech attack the profitable, capital‑light slices — payments, lending, advice — with better UX and lower cost, unbundling the bank. Incumbents defend with trust, scale, deposits, and licenses.","The threat isn't one rival — it's a thousand cuts to your best margins."],
+    ["Strategy & Value","Customer unit economics","Value per customer = lifetime value (products × margin × tenure) minus acquisition cost. Cross‑sell and retention, not just acquisition, drive real profitability.","The war is won on cross‑sell and retention, not on flashy acquisition numbers."],
+    ["Strategy & Value","Regulatory & reputational risk","Beyond financial risk, fines, license loss, and reputational damage can dwarf any single loan loss. In a trust business, reputation is capital — and it compounds in both directions.","In banking, trust is the balance sheet you can't rebuild overnight."],
+    ["Strategy & Value","Capital as the scarce resource","Capital limits how much a bank can lend and grow, so allocating it to the highest risk‑adjusted returns is the core strategic act. Every business competes for the same scarce capital.","The CEO's real job is deciding where each unit of capital earns the most."],
+    ["Strategy & Value","Growth / risk / return trade‑off","You can chase growth, safety, or returns — rarely all three at once. Fast growth often means loosening credit; high returns often mean more risk. Managing that tension is strategy.","Beware the bank growing fastest — someone is usually underpricing risk to do it."],
+    ["Strategy & Value","The CEO scorecard","The metrics that truly judge a bank CEO: ROE versus COE, CET1 capital, cost‑to‑income, NIM, asset quality, and total shareholder return — all balanced against risk. Everything ladders up to these.","Run the bank to these numbers and the share price follows; chase the price alone and they betray you."]
+  ].map((c, i) => ({ n: i + 1, cat: c[0], concept: c[1], explain: c[2], lens: c[3] }));
+
+  /* ===================== I18N ===================== */
+  const UI_EN = {
+    tagline1: "How banking works", tagline2: "100 cards to the C‑suite",
+    cardLabel: "Card", masteredLabel: "Mastered", all: "All",
+    reveal: "Reveal the detail", masteredFlag: "Mastered", lensLabel: "C‑Suite Lens",
+    flip: "Flip", master: "Master", shuffle: "Shuffle",
+    kbNav: "navigate", kbFlip: "flip", kbMaster: "master", kbShuffle: "shuffle",
+    cardAria: "Flashcard. Activate to reveal the answer.",
+    prevAria: "Previous card", nextAria: "Next card", flipAria: "Flip card",
+    markAria: "Mark as mastered", shuffleAria: "Shuffle deck"
+  };
+
+  const I18N = {"ru":{"modules":{"Interest & Money":"Проценты и деньги","The Bank Model":"Модель банка","Balance Sheet":"Баланс","Lending & Credit":"Кредитование","Risk":"Риски","Capital & Rules":"Капитал и регулирование","Treasury & ALM":"Казначейство и ALM","Payments & Ops":"Платежи и операции","Markets & Fees":"Рынки и комиссии","Strategy & Value":"Стратегия и стоимость"},"ui":{"tagline1":"Как устроен банкинг","tagline2":"100 карточек до уровня топ-менеджмента","cardLabel":"Карточка","masteredLabel":"Освоено","all":"Все","reveal":"Раскрыть подробности","masteredFlag":"Освоено","lensLabel":"Взгляд топ-менеджера","flip":"Перевернуть","master":"Освоить","shuffle":"Перемешать","kbNav":"навигация","kbFlip":"перевернуть","kbMaster":"освоить","kbShuffle":"перемешать","cardAria":"Флеш-карточка. Активируйте, чтобы увидеть ответ.","prevAria":"Предыдущая карточка","nextAria":"Следующая карточка","flipAria":"Перевернуть карточку","markAria":"Отметить как освоенную","shuffleAria":"Перемешать колоду"},"cards":{"1":{"concept":"Как возникает процент","explain":"Процент — это цена времени. Доллар сегодня стоит больше, чем доллар завтра, потому что его можно пустить в дело, а завтрашний день несёт риск и инфляцию. Процент — это то, что кредитор берёт за отказ от временной ценности денег, за компенсацию ожидаемой инфляции и за риск того, что деньги не вернут.","lens":"Любой продукт, который продаёт банк, по сути — это сдача времени и риска в аренду."},"2":{"concept":"Простые и сложные проценты","explain":"Простые проценты начисляются только на первоначальную сумму. Сложные проценты начисляются на основную сумму плюс весь накопленный процент, поэтому растут экспоненциально, а не линейно. На длинных горизонтах капитализация доминирует — вот почему частота начисления и время важнее, чем заявленная ставка.","lens":"Небольшие различия в ставках или комиссиях складываются в огромную стоимость за срок жизни портфеля."},"3":{"concept":"Номинальные и реальные ставки","explain":"Номинальная ставка — это заявленная ставка; реальная ставка очищена от инфляции (реальная ≈ номинальная − инфляция — соотношение Фишера). Кредит под 6% при инфляции 5% приносит лишь около 1% реальной покупательной способности.","lens":"Маржа, выглядящая здоровой в номинальном выражении, может оказаться тонкой — или отрицательной — в реальном."},"4":{"concept":"APR и APY (эффективная доходность)","explain":"APR — это простая годовая ставка, игнорирующая внутригодовую капитализацию; APY (или EAR) учитывает капитализацию, поэтому всегда ≥ APR. 12% с ежемесячной капитализацией — это фактически около 12,68%. Правила раскрытия информации определяют, какую из них обязаны показать клиенту.","lens":"То, как вы объявляете ставку, меняет и число, которое видит клиент, и то, что вы реально зарабатываете."},"5":{"concept":"Приведённая стоимость и дисконтирование","explain":"Приведённая стоимость переводит будущие деньги в сегодняшние, деля их на (1+r)ᵗ — коэффициент дисконтирования. Это движок за ценообразованием кредитов, оценкой облигаций и любым вопросом «сколько этот будущий поток стоит сейчас?».","lens":"Дисконтирование — это то, как банк назначает цену всему, что приносит выплаты во времени."},"6":{"concept":"Безрисковая ставка","explain":"Теоретическая доходность вложения без риска дефолта, аппроксимируемая краткосрочным госдолгом вроде казначейских векселей. Это фундамент, на котором строится любая другая ставка: рисковая ставка = безрисковая ставка + спреды за кредитный риск, ликвидность и срочность.","lens":"Когда безрисковая ставка сдвигается, переоценивается каждый актив на балансе."},"7":{"concept":"Инфляция и покупательная способность","explain":"Инфляция со временем разъедает то, что можно купить на деньги. Банк ощущает её дважды: она съедает реальную стоимость удерживаемых им кредитов с фиксированной ставкой и определяет решения центробанка по ставке, которые пересматривают стоимость его фондирования.","lens":"Инфляция тихо перераспределяет стоимость между заёмщиками и вкладчиками банка."},"8":{"concept":"Частота капитализации","explain":"Чем чаще начисляется процент — ежегодно, затем ежемесячно, ежедневно, непрерывно — тем выше эффективная доходность при той же номинальной ставке. Непрерывная капитализация использует eʳᵗ и лежит в основе ценообразования деривативов.","lens":"Частота — это рычаг: она меняет реальную экономику, не трогая рекламируемую ставку."},"9":{"concept":"Фиксированные и плавающие ставки","explain":"Фиксированная ставка зафиксирована на срок; плавающая периодически пересматривается относительно бенчмарка (SOFR, EURIBOR) плюс маржа. Фиксированные ставки перекладывают процентный риск на кредитора; плавающие — на заёмщика.","lens":"Соотношение фиксированных и плавающих ставок в портфеле решает, кто пострадает при движении ставок."},"10":{"concept":"Срочность и кривая доходности","explain":"Кривая доходности отражает зависимость процентной ставки от срока. Обычно она имеет восходящий наклон — дольше означает большую доходность за срочность и инфляционный риск — тогда как инвертированная кривая (короткие ставки выше длинных) исторически предупреждала о рецессии.","lens":"Наклон кривой — это, в одну строку, прогноз погоды для банковской маржи."},"11":{"concept":"Занимать коротко, кредитовать длинно","explain":"Банки привлекают краткосрочные, возвратные по требованию депозиты и превращают их в долгосрочные, неликвидные кредиты, забирая разницу. Эта «трансформация сроков» — ключевая услуга банков и одновременно их ключевая уязвимость.","lens":"Бизнес построен на ставке, что не все попросят вернуть деньги одновременно."},"12":{"concept":"Чистая процентная маржа (NIM)","explain":"NIM = (заработанные проценты − уплаченные проценты) ÷ средние процентные активы, обычно 1,5–4%. Это ключевой показатель прибыльности кредитного механизма, и он расширяется, когда доходность активов растёт быстрее стоимости фондирования.","lens":"Несколько базисных пунктов NIM на портфеле в триллион долларов — это вполне реальные деньги."},"13":{"concept":"Процентный и непроцентный доход","explain":"Чистый процентный доход приходит от кредитного спреда; непроцентный доход — от комиссий, вознаграждений, торговли и услуг. Их сочетание определяет, насколько чувствительна к ставкам — и насколько диверсифицирована — прибыль.","lens":"Советы директоров ценят комиссионный доход, потому что он продолжает поступать, когда ставки сжимают спред."},"14":{"concept":"Комиссионный доход","explain":"Деньги, заработанные за услуги, а не за кредитование: комиссии по счетам и картам, консультации, управление активами, транзакционные сборы. Он не требует капитала и устойчив, поэтому рынок присуждает ему премию к оценке.","lens":"Комиссионный бизнес превращает балансового кредитора в сервисную франшизу."},"15":{"concept":"Финансовое посредничество","explain":"Банки стоят между сберегателями и заёмщиками, разрешая несоответствия по размеру, срочности и аппетиту к риску, а также отбирая и мониторя заёмщиков, чего сберегатели сделать не могут. Это посредничество и есть та ценность, что они добавляют.","lens":"Дезинтермедиация — финтех, рынки капитала, стейблкоины — атакует именно эту середину."},"16":{"concept":"Спред","explain":"Разрыв между тем, что банк зарабатывает на активах, и тем, что платит по обязательствам. Почти всё в банкинге сконструировано для того, чтобы расширить этот спред, защитить его или корректно заложить в него риск.","lens":"Растить портфель, защищать спред, контролировать потери — вся игра в шести словах."},"17":{"concept":"Частичное резервирование и создание денег","explain":"Банки держат в резерве лишь долю депозитов, а остальное выдают в кредит; каждый кредит становится новым депозитом в другом месте, который снова выдают. Коллективно банковская система создаёт деньги через кредитование, ограниченная капиталом и резервами.","lens":"Банки не просто перемещают деньги — вместе они их производят."},"18":{"concept":"Депозиты как источник фондирования","explain":"Клиентские депозиты — самое дешёвое и устойчивое фондирование банка, зачастую почти бесплатное и медленно уходящее. Качество депозитной франшизы — один из сильнейших конкурентных рвов в банкинге.","lens":"Дешёвые лояльные депозиты — это фамильные драгоценности; потерять их — значит удорожить всё."},"19":{"concept":"Оптовое и розничное фондирование","explain":"Розничное фондирование — это множество мелких, устойчивых депозитов. Оптовое фондирование — крупные, чувствительные к ставкам деньги с рынков и от институтов, способные быстро сбежать. Чрезмерная опора на оптовое фондирование была центральной в крахах 2008 года.","lens":"Структура фондирования — это вопрос выживания, а не просто вопрос стоимости."},"20":{"concept":"Стоимость фондирования","explain":"Смешанная ставка, которую банк платит по всему своему фондированию — депозитам, долгу, оптовым деньгам. Она задаёт нижнюю границу ценообразования кредитов: выдай кредит ниже стоимости фондирования плюс расходов плюс ожидаемых потерь — и теряешь деньги.","lens":"Ростом не перекрыть сломанную стоимость фондирования."},"21":{"concept":"Как читать банковский баланс","explain":"У банка баланс перевёрнут относительно обычной компании: кредиты — это активы (деньги, которые ему должны), депозиты — обязательства (деньги, которые должен он). Капитал — тонкая прослойка между ними, поглощающая потери.","lens":"Банк, по сути, и есть свой баланс — отчёт о прибылях лишь показывает, сколько этот баланс зарабатывает."},"22":{"concept":"Активы и обязательства как зеркало","explain":"Ваш депозит — ваш актив, но обязательство банка; ваш кредит — актив банка, но ваше обязательство. Понимание этого зеркала — ключ к чтению счетов любого банка.","lens":"Актив одной стороны всегда является обязательством другой — банки ставят этот факт на промышленную основу."},"23":{"concept":"Собственный капитал","explain":"Средства акционеров: активы минус обязательства. Это буфер, поглощающий потери, прежде чем они затронут вкладчиков, и база, относительно которой измеряется доходность (ROE) — обычно лишь 5–10% баланса.","lens":"Капитал — одновременно амортизатор потрясений и знаменатель в оценочной карте."},"24":{"concept":"Структура кредитного портфеля","explain":"Состав активной части — ипотека, корпоративные кредиты, потребительские займы, карты — в разрезе секторов и географии. Её концентрация и качество определяют и зарабатываемую доходность, и понесённые потери.","lens":"Покажите мне концентрации кредитного портфеля — и я покажу, где случится следующий кризис."},"25":{"concept":"Забалансовые статьи","explain":"Обязательства и риски, (пока) не отражённые на балансе: невыбранные кредитные линии, гарантии, аккредитивы, деривативы. Они несут реальный риск и в кризис могут обрушиться на баланс.","lens":"То, что вне баланса, погубило больше банков, чем то, что на нём."},"26":{"concept":"Отчёт о прибылях и убытках","explain":"Верхняя строка — чистый процентный доход плюс комиссионный доход плюс торговый доход. Вычтите операционные расходы и резервы под кредитные потери, чтобы получить прибыль до налогов. Резервы — тот переменный фактор, что превращает хорошие годы в плохие.","lens":"Выручку выбирают; резервы обнаруживают — вот где прячется правда."},"27":{"concept":"Рентабельность активов (ROA)","explain":"Чистая прибыль ÷ совокупные активы — насколько эффективно весь баланс генерирует прибыль. Около 1% — солидный показатель для банка; низкая ROA присуща отрасли, и банки компенсируют её объёмом и левериджем.","lens":"Тонкая ROA — это норма; доходность капитала создаёт именно нагромождённый сверху леверидж."},"28":{"concept":"Рентабельность капитала (ROE)","explain":"Чистая прибыль ÷ акционерный капитал — главная метрика прибыльности. ROE ≈ ROA × леверидж, поэтому ROA в 1% при левередже 10× даёт ROE в 10%.","lens":"ROE создаёт стоимость лишь тогда, когда превышает стоимость капитала — число, которое правит топ-менеджментом."},"29":{"concept":"Леверидж","explain":"Банки финансируют активы в основном долгом и депозитами, а не капиталом, поэтому активы могут в 10–20 раз превышать капитал. Леверидж усиливает ROE — и потери: убыток по активам в 5% при левередже 15× уничтожает капитал.","lens":"Леверидж — это усилитель: он делает хорошие времена прекрасными, а плохие — смертельными."},"30":{"concept":"Балансовая и рыночная стоимость","explain":"Балансовая стоимость — это бухгалтерский капитал; рыночная — то, что готовы заплатить инвесторы. Коэффициент цена/балансовая стоимость выше 1 означает, что рынок верит: банк зарабатывает выше стоимости капитала; ниже 1 — сигнал сомнения.","lens":"Коэффициент цена/капитал ниже 1 — это рынок, говорящий, что ваша ROE не покрывает риск."},"31":{"concept":"Кредитный процесс","explain":"Андеррайтинг: оценить заёмщика, структурировать кредит, заложить цену за риск, одобрить в рамках лимитов, а затем мониторить до погашения. Дисциплинированная выдача — самая дешёвая форма управления риском из существующих.","lens":"Потери создаются в момент выдачи и лишь позже признаются."},"32":{"concept":"Пять «C» кредита","explain":"Character (репутация и история), Capacity (денежный поток для погашения), Capital (собственный вклад заёмщика), Collateral (обеспечение), Conditions (экономика и цель). Вечный чек-лист того, кому давать в долг.","lens":"Модели стареют; пять «C» по-прежнему объясняют большинство дефолтов."},"33":{"concept":"Обеспеченные и необеспеченные кредиты","explain":"Обеспеченные кредиты подкреплены залогом, который банк может изъять (ипотека, автокредиты); необеспеченные опираются лишь на обещание вернуть (карты, потребкредиты) и потому несут более высокие ставки и потери.","lens":"Отсутствие залога должно быть заложено в цену — иначе оно превращается в убыток."},"34":{"concept":"Залог и коэффициент LTV","explain":"LTV = кредит ÷ стоимость залога. Ипотека с LTV 80% оставляет 20% запаса капитала, прежде чем банк уйдёт в минус. Падение стоимости залога — обвал на рынке жилья — делает прежде безопасные LTV опасными.","lens":"Залог хорош ровно настолько, насколько сохраняет стоимость в том самом стрессе, когда он вам понадобится."},"35":{"concept":"Кредитный риск и вероятность дефолта","explain":"Кредитный риск — вероятность того, что заёмщик не вернёт долг. PD — оценочная вероятность дефолта на горизонте, обычно одном годе, — первый вход для расчёта ожидаемых потерь.","lens":"PD — это прогноз, а прогнозы дают сбой именно тогда, когда все объявляют дефолт разом."},"36":{"concept":"LGD и EAD","explain":"LGD (Loss Given Default) — доля, не возмещённая после дефолта за вычетом залога. EAD (Exposure at Default) — сумма задолженности на момент дефолта. Вместе с PD они определяют размер потерь.","lens":"Возмещения (1 − LGD) — это то, где хорошие команды по взысканию тихо оправдывают своё содержание."},"37":{"concept":"Ожидаемые потери (PD × LGD × EAD)","explain":"Ожидаемые потери = вероятность дефолта × потери при дефолте × сумма под риском. Это средние потери, которые вы планируете и закладываете в цену кредита — они покрываются резервами и маржой, а не капиталом.","lens":"Ожидаемые потери — это издержки ведения бизнеса; непредвиденные потери — то, ради чего существует капитал."},"38":{"concept":"Резервы под кредитные потери","explain":"Резервы, откладываемые под ожидаемые кредитные потери. Современные стандарты — IFRS 9 и CECL — требуют признавать ожидаемые потери на перспективной основе, а не ждать дефолта, что делает резервы более волатильными.","lens":"Сроки формирования резервов перекладывают прибыль между годами — следите за этим в оба глаза."},"39":{"concept":"Проблемные кредиты (NPL)","explain":"Кредиты, по которым заёмщик перестал платить, обычно с просрочкой 90+ дней. Доля NPL — ключевой индикатор качества активов; их рост съедает капитал и сигнализирует об ухудшении портфеля.","lens":"Динамика NPL опережает прибыль — она сегодня подсказывает резервы следующего года."},"40":{"concept":"Ценообразование кредитов с учётом риска","explain":"Цена = стоимость фондирования + операционные издержки + ожидаемые потери + плата за капитал + целевая маржа. Более рискованные заёмщики должны платить больше, чтобы покрыть свои более высокие ожидаемые потери и более тяжёлое потребление капитала.","lens":"Занизьте цену риска ради объёма — и вы попросту покупаете убытки со скидкой."},"41":{"concept":"Четыре основных вида риска","explain":"Кредитный (заёмщики не платят), рыночный (цены движутся против вас), ликвидности (вы не можете профондироваться или рассчитаться) и операционный (сбой людей, процессов, систем). Почти любой убыток банка сводится к одному из этих четырёх.","lens":"Разные риски, одна жёсткая истина: в кризис они все злобно коррелируют."},"42":{"concept":"Риск концентрации","explain":"Слишком большая подверженность одному заёмщику, сектору, географии или типу залога. Диверсификация — единственный бесплатный обед; концентрация — то, как взрываются «безопасные» портфели: энергетика, недвижимость, один контрагент.","lens":"За каждым крупным убытком банка стоит история концентрации."},"43":{"concept":"Рыночный риск и VaR","explain":"Риск того, что рыночные цены — ставки, валюта, акции, кредитные спреды — сдвинутся против торговых позиций. VaR (Value at Risk) оценивает максимальный убыток на горизонте при заданном уровне доверия, но слеп к хвосту за его пределами.","lens":"VaR прогнозирует погоду, а не шторм раз в десятилетие — никогда не путайте одно с другим."},"44":{"concept":"Риск ликвидности","explain":"Риск оказаться неспособным исполнить обязательства в срок без экстренной распродажи активов. Банк может быть абсолютно платёжеспособным и всё же рухнуть, если не сможет профондироваться — ликвидность убивает быстрее кредита.","lens":"Неплатёжеспособность приходит медленно; набег на ликвидность измеряется часами."},"45":{"concept":"Процентный риск банковской книги (IRRBB)","explain":"IRRBB — риск того, что движения ставок ударят по стоимости или доходу неторговых активов и обязательств — например, фондирование долгой ипотеки по фиксированной ставке дешёвыми депозитами, которые внезапно переоцениваются вверх.","lens":"Silicon Valley Bank в своей основе был крахом непрохеджированного IRRBB."},"46":{"concept":"Операционный риск","explain":"Убыток от сбоев процессов, людей, систем или внешних событий — мошенничество, кибератаки, сбои, недобросовестные продажи, судебные иски. Труден для количественной оценки, безграничен в хвосте и всё чаще доминирует в цифровом банкинге.","lens":"Следующий крупный убыток может оказаться не плохим кредитом, а утечкой данных или штрафом."},"47":{"concept":"Модельный риск","explain":"Риск того, что модели, на которые банки полагаются для ценообразования, оценки и измерения риска, попросту неверны — плохие допущения, плохие данные или применение вне области их разработки. 2008 год был отчасти событием модельного риска.","lens":"Точное число из неверной модели опаснее, чем признанная неопределённость."},"48":{"concept":"Три линии защиты","explain":"Линия 1: бизнес владеет своим риском. Линия 2: риск и комплаенс задают лимиты и оспаривают решения. Линия 3: внутренний аудит проверяет, что всё работает. Это управленческий костяк контроля над рисками.","lens":"Когда три линии размываются, тихо исчезают и подотчётность, и контроль."},"49":{"concept":"Аппетит к риску и RAROC","explain":"Аппетит к риску — заявленный советом директоров лимит риска, принимаемого ради доходности. RAROC (доходность на капитал с поправкой на риск) измеряет отдачу на единицу рискового капитала, так что бизнесы конкурируют эффективностью, а не только размером.","lens":"Рост, игнорирующий доходность с поправкой на риск, разрушает стоимость, выглядя как успех."},"50":{"concept":"Стресс-тестирование","explain":"Моделирование тяжёлых, но правдоподобных сценариев — рецессия, шок ставок, обвал рынка — чтобы проверить, выживут ли капитал и ликвидность. Регуляторы предписывают его (CCAR, EBA) и используют для допуска к выплате дивидендов.","lens":"Стресс-тесты — это то, где совет директоров узнаёт, сколько он на самом деле может позволить себе потерять."},"51":{"concept":"Зачем нужен капитал","explain":"Капитал — это буфер собственных средств, который поглощает непредвиденные убытки, чтобы их не приняли на себя вкладчики и вся система. Слишком мало капитала — и шок ведёт к неплатёжеспособности; слишком много — и страдает доходность. Поиск баланса и есть центральное противоречие регулирования.","lens":"Капитал — это цена за право привлекать депозиты."},"52":{"concept":"Базельские стандарты","explain":"Международные стандарты — Базель I, II и III — устанавливают минимальные требования к капиталу, ликвидности и левериджу банков. Базель III, появившийся после кризиса 2008 года, резко повысил качество и объём капитала и добавил требования к ликвидности.","lens":"Базель — глобальный свод правил, определяющий, что банк может и чего не может делать."},"53":{"concept":"Активы, взвешенные по риску (RWA)","explain":"Активы, масштабированные по степени риска: наличные — около 0%, ипотека — ~35%, необеспеченный корпоративный кредит — 100% и выше. Нормативы капитала считаются относительно RWA, поэтому рискованное кредитование потребляет намного больше капитала, чем безопасное.","lens":"RWA — валюта капитала: то, куда вы кредитуете, определяет, сколько его вы сжигаете."},"54":{"concept":"Нормативы капитала (CET1)","explain":"CET1 — капитал высшего качества (обыкновенный акционерный) — делится на RWA и даёт ключевой норматив достаточности; регуляторы требуют минимума плюс буферов, часто от 10%. Капитал первого уровня (Tier 1) и совокупный капитал добавляют слои более низкого качества.","lens":"CET1 — тот единственный показатель, который аналитики, регуляторы и рейтинговые агентства проверяют в первую очередь."},"55":{"concept":"Норматив левериджа","explain":"Капитал первого уровня (Tier 1) ÷ совокупная величина риска, без взвешивания по риску. Это подстраховка для нормативов на базе RWA, которую нельзя обойти через выгодное взвешивание рисков — она ограничивает общий леверидж независимо от заявленного риска.","lens":"Норматив левериджа — это тот самый пол «как бы безопасно вы себя ни считали»."},"56":{"concept":"Норматив краткосрочной ликвидности (LCR)","explain":"Требует держать достаточно высоколиквидных активов, чтобы пережить 30-дневный отток при жёстком стрессе. Прямой ответ на набеги на фондирование 2008 года: банки должны иметь подушку ликвидности, а не только капитал.","lens":"LCR — это правило: первый месяц продержись полностью на своих силах."},"57":{"concept":"Норматив чистого стабильного фондирования (NSFR)","explain":"Требует, чтобы стабильное фондирование покрывало более долгосрочные (годовые) активы, ограничивая чрезмерную зависимость от неустойчивых коротких денег. Это структурное дополнение к краткосрочному LCR.","lens":"NSFR заставляет ответственно фондировать саму ставку на трансформацию сроков."},"58":{"concept":"Буферы капитала","explain":"Капитал сверх минимумов: буфер консервации (действует всегда), контрциклический буфер (повышается на подъёмах) и надбавка для системно значимых банков (G-SIB). Их нарушение ограничивает дивиденды и бонусы ещё до банкротства.","lens":"Буферы созданы, чтобы их тратить в стрессе — копить их значит перечёркивать их смысл."},"59":{"concept":"Страхование вкладов","explain":"Государственная гарантия по вкладам в пределах лимита — 250 тыс. долл. по линии FDIC, 100 тыс. евро в ЕС. Она гасит рациональные набеги на банки, убирая стимул бежать, и, возможно, является самым дешёвым инструментом финансовой стабильности из когда-либо изобретённых.","lens":"Страхование покупает спокойствие; его лимит — ровно та черта, за которой набеги всё ещё возможны (см. 2023 год)."},"60":{"concept":"Кредитор последней инстанции","explain":"Центральный банк готов кредитовать платёжеспособные, но временно неликвидные банки под хорошее обеспечение, не давая панике перерасти в крах. Правило Бэджета: кредитуй щедро, по штрафной ставке, под надёжный залог.","lens":"Та самая подстраховка, что делает частичное резервирование выживаемым — и порождает моральный риск."},"61":{"concept":"Управление активами и пассивами (ALM)","explain":"ALM — центральная функция, которая согласует сроки, ставки и валюты активов и обязательств, управляя процентным риском и риском ликвидности по всему балансу.","lens":"В ALM банк решает, какую долю ставки «занимай коротко — кредитуй длинно» отыгрывать."},"62":{"concept":"Банковская книга и торговая книга","explain":"Банковская книга держит кредиты и депозиты до погашения и учитывается по начислению. Торговая книга держит позиции для торговли и ежедневно переоценивается по рынку. У них разные риски, требования к капиталу и учёт.","lens":"Книга, в которой сидит актив, меняет его капитал, его учёт и владельца риска."},"63":{"concept":"Трансфертное ценообразование (FTP)","explain":"Внутренняя «цена», которую казначейство берёт с кредитующих подразделений за средства и платит привлекающим депозиты за их привлечение. FTP справедливо делит спред и показывает, какие бизнесы реально создают стоимость.","lens":"Ошибись в FTP — и вознаградишь не те бизнесы и неверно оценишь весь портфель."},"64":{"concept":"Процентный гэп и дюрация","explain":"Гэп-анализ измеряет разрыв между активами и обязательствами, переоцениваемыми в заданном периоде; дюрация измеряет чувствительность цены к движению ставок. Оба показателя количественно оценивают, как процентный шок бьёт по доходу и стоимости.","lens":"Крупный незахеджированный гэп — это ставка с плечом на то, куда пойдут ставки."},"65":{"concept":"Хеджирование свопами","explain":"Процентные свопы позволяют банку превратить фиксированную ставку в плавающую (или наоборот), не трогая сами кредиты, дёшево и гибко нейтрализуя процентный риск.","lens":"Риск не в деривативах — чаще риск в том, что их не используют для хеджа."},"66":{"concept":"Управление ликвидностью","explain":"Держать подушку ликвидных активов и диверсифицированное фондирование, чтобы банк мог покрыть оттоки в стрессе без вынужденных распродаж. Управляется ежедневно через прогноз денежных потоков и буфер ликвидности.","lens":"Ликвидность дёшево держать и бесценно иметь, когда рынки замерзают."},"67":{"concept":"Ключевая ставка и трансмиссия","explain":"Центральный банк задаёт ключевую ставку; через денежный рынок она перетекает в ставки по депозитам и кредитам, а значит — в маржу банков и в экономику в целом. Эта трансмиссия и есть денежно-кредитная политика в действии.","lens":"Когда центробанк двигает ставку, казначейство решает, какую её часть переложить дальше."},"68":{"concept":"Репо и денежные рынки","explain":"Краткосрочное обеспеченное заимствование, где ценные бумаги продаются и выкупаются обратно — сантехника, которой банки фондируют позиции и управляют дневной ликвидностью. Заморозка рынка репо — это остановка всей системы.","lens":"Рынок репо незаметен, пока он работает — а стоит ему встать, он и есть вся история."},"69":{"concept":"Планирование капитала (ICAAP)","explain":"Собственная, ориентированная на будущее и проверенная стрессом оценка банком того, сколько капитала требуют его риски, рассматриваемая регуляторами. ICAAP связывает стратегию, риск и капитал в едином процессе.","lens":"В ICAAP «сколько риска мы можем нести» встречается со «сколько капитала у нас есть»."},"70":{"concept":"Возврат капитала и дивиденды","explain":"Решение о том, сколько прибыли удержать — на рост и буфер — против того, чтобы вернуть её дивидендами и выкупом акций. Регуляторы могут заблокировать выплаты, когда капитал или результаты стресс-теста слабы.","lens":"Возврат капитала сигналит о силе; вынужденное урезание выплат кричит о слабости."},"71":{"concept":"Клиринг и расчёты","explain":"Клиринг — это согласование того, кто кому и сколько должен; расчёт — фактический перевод средств. Платёж, который вы «отправляете» мгновенно, может пройти клиринг за секунды, а расчёт занять часы или дни.","lens":"Между кликом и расчётом сидят реальный риск — и реальный флоат."},"72":{"concept":"Корреспондентские отношения","explain":"Банки держат счета друг у друга, чтобы двигать деньги через границы и валюты. Ностро — «наш» счёт у них; лоро (востро) — «ваш» счёт у нас. Это костяк трансграничных платежей.","lens":"Эта сеть медленна и дорога — именно на неё нацелены финтех и стейблкоины."},"73":{"concept":"Карты: эмиссия, эквайринг, интерчейндж","explain":"Эмитенты выдают карты держателям; эквайеры подключают торговцев; интерчейндж — устанавливаемая платёжной системой комиссия, которая на каждой операции течёт от эквайера к эмитенту. Это многосторонняя денежная машина.","lens":"Интерчейндж — тихий, огромный и жёстко регулируемый источник прибыли."},"74":{"concept":"Мгновенные платежи в реальном времени","explain":"Системы вроде FedNow, UPI и SEPA Instant проводят клиринг и расчёт за секунды, круглосуточно. Они сжимают флоат, ускоряют мошенничество и давят на комиссии старых платёжных рельсов.","lens":"Платежи в реальном времени убирают флоат — статья дохода и окно риска исчезают разом."},"75":{"concept":"SWIFT и трансграничные платежи","explain":"SWIFT — сеть обмена сообщениями, которой банки передают инструкции по трансграничным платежам: она двигает сообщения, а не деньги. Медленную, многослойную и дорогую, её трение и стремятся убрать финтех и CBDC.","lens":"SWIFT — это сообщения, а не деньги: это различие объясняет большую часть трансграничной боли."},"76":{"concept":"RTGS и деньги центрального банка","explain":"Системы валовых расчётов в реальном времени (RTGS) проводят крупные платежи поштучно и безотзывно в деньгах центрального банка — предельно безрисковом расчётном активе — и составляют ядро национальных платёжных систем.","lens":"Деньги центрального банка — единственный по-настоящему окончательный расчёт; всё прочее лишь обещание."},"77":{"concept":"AML, KYC и мошенничество","explain":"Правила KYC («знай своего клиента») и AML (противодействие отмыванию) требуют от банков проверять личность и отслеживать незаконные потоки. Сбои влекут огромные штрафы и репутационный ущерб.","lens":"Комплаенс — не издержки: один провал по AML может стоить миллиардов и банковской лицензии."},"78":{"concept":"Сверка и бэк-офис","explain":"Неброская работа по сопоставлению записей, чтобы каждая транзакция сходилась. Расхождения здесь сигналят о мошенничестве, ошибке или убытке; сильные операции — это подлинное конкурентное преимущество.","lens":"Операционное совершенство редко попадает в заголовки, но постоянно предотвращает убытки."},"79":{"concept":"Флоат и расчётный риск","explain":"Флоат — деньги в пути, которыми не может пользоваться ни одна сторона; расчётный риск (Херштатт) — это когда одна сторона платит, а другая не завершает расчёт. Разрывы во времени — реальный, исторический источник убытков.","lens":"Разрыв между «заплатил» и «получил» — там, где банкротство контрагента становится вашим убытком."},"80":{"concept":"Отношение расходов к доходам (CIR)","explain":"Операционные расходы ÷ доходы — эталон эффективности. Ниже ~50% — сильно; выше ~65% сигналит о раздутости. Именно на этот рычаг сильнее всего давят технологии и масштаб.","lens":"CIR — метрика, по которой активисты и советы директоров судят о хватке менеджмента."},"81":{"concept":"Инвестиционный и коммерческий банкинг","explain":"Коммерческие банки привлекают депозиты и кредитуют; инвестиционные банки консультируют, организуют размещения и торгуют для корпораций и институтов. Универсальные банки делают и то и другое под одной крышей, с барьерами между направлениями.","lens":"Их сочетание объединяет стабильность фондирования и апсайд комиссий — а вместе с ним и их риски."},"82":{"concept":"Рынки капитала: долг и акции","explain":"Вместо кредитования банки помогают клиентам привлекать деньги напрямую у инвесторов — выпуская облигации (долг) или акции (капитал, IPO). Банк зарабатывает комиссии, беря на баланс мало риска.","lens":"Комиссии рынков капитала ценятся: высокая маржа, лёгкость по капиталу и цикличность."},"83":{"concept":"Секьюритизация","explain":"Объединение кредитов — ипотеки, карт, автозаймов — в пул и продажа их как обращающихся ценных бумаг, выводя риск с баланса и высвобождая капитал для нового кредитования. Использованная неправильно, она подпитала кризис 2008 года.","lens":"Мощный инструмент капитала, который становится оружием, когда качество базовых активов скрыто."},"84":{"concept":"Управление благосостоянием и активами","explain":"Управление деньгами частных лиц (wealth) и институтов (asset management) за регулярные комиссии. Лёгкий по капиталу, липкий и масштабируемый — сегмент, которого банки жаждут больше всего.","lens":"Комиссии от активов под управлением (AUM) — та рента, которой каждый CEO банка хочет больше."},"85":{"concept":"Торговое финансирование","explain":"Финансирование и снижение рисков глобальной торговли — аккредитивы, гарантии, финансирование цепочек поставок — чтобы экспортёры и импортёры могли доверять друг другу. Древнее, необходимое и богатое комиссиями.","lens":"Торговое финансирование смазывает мировую торговлю и привязывает клиентов липким бизнесом с малыми потерями."},"86":{"concept":"Казначейские и валютные услуги","explain":"Помощь клиентам в управлении валютой, ставками и ликвидностью — конвертация валют, хеджирование, кэш-менеджмент. Это высокообъёмная, регулярная выручка, закрепляющая отношения.","lens":"Эти услуги углубляют отношения с клиентом и дают стабильные низкорисковые комиссии."},"87":{"concept":"Основы деривативов","explain":"Контракты, чья стоимость производна от базового актива — ставки, валюты, товара, акции. Форварды фиксируют цену, опционы дают право, свопы обменивают денежные потоки. Инструменты для хеджа или для спекуляции.","lens":"Деривативы передают риск — опасность в том, что не знаешь, у кого он в итоге окажется."},"88":{"concept":"Трейдинг и маркет-мейкинг","explain":"Банки котируют цены покупки и продажи, зарабатывая на спреде bid-ask и предоставляя ликвидность. Это прибыльно, но волатильно и капиталоёмко; правила после 2008 года ограничили собственные торговые риски.","lens":"Торговый доход приукрашивает хорошие годы и способен взорвать плохие."},"89":{"concept":"Универсальные и специализированные банки","explain":"Универсальные банки охватывают розницу, корпоративный бизнес, инвестбанкинг и рынки; специалисты фокусируются — карточный эмитент, частный банк. Широта диверсифицирует выручку, но добавляет сложность и системный риск.","lens":"Диверсификация против фокуса — вечный спор о стратегии и оценке."},"90":{"concept":"Диверсификация комиссионного дохода","explain":"Распределение выручки между кредитованием и несколькими комиссионными потоками, чтобы прибыль пережила любой отдельный шок или ставочный цикл. Инвесторы платят больше за диверсифицированный, регулярный доход.","lens":"Рынок вознаграждает устойчивый комиссионный доход более высоким мультипликатором, чем волатильный процентный спред."},"91":{"concept":"Что определяет оценку банка","explain":"Банки торгуются по мультипликатору «цена/капитал» (P/B) — привязанному к ROE относительно стоимости капитала — больше, чем по P/E. Если ROE превышает COE, акция стоит выше капитала; если нет — ниже. Рост, риск и доходность задают мультипликатор.","lens":"Вся история акций сводится к одному: бьёт ли ваш ROE вашу стоимость капитала?"},"92":{"concept":"Стоимость капитала и правило ROE > COE","explain":"Стоимость собственного капитала (COE) — доходность, которую акционеры требуют за принимаемый риск. Банк создаёт стоимость только когда ROE превышает COE; зарабатывая ниже неё, он разрушает стоимость, даже показывая прибыль.","lens":"«Прибыльный» и «разрушающий стоимость» — не противоположности: банк может быть тем и другим одновременно."},"93":{"concept":"Экономическая прибыль / EVA","explain":"Прибыль после списания платы за весь задействованный капитал, включая собственный по его стоимости. Она обнажает, действительно ли бизнес добавляет стоимость или лишь потребляет дорогой капитал, создавая видимость деятельности.","lens":"Бухгалтерская прибыль приукрашивает; экономическая прибыль говорит правду о стоимости."},"94":{"concept":"Рычаг эффективности","explain":"Снижение отношения расходов к доходам — через автоматизацию, масштаб и упрощение — почти напрямую перетекает в чистую прибыль и ROE. Это самый управляемый рычаг стоимости в руках менеджмента.","lens":"Когда выручку растить трудно, эффективность — тот рычаг, который CEO реально может нажать."},"95":{"concept":"Цифровизация и финтех-разрушение","explain":"Финтех и бигтех атакуют прибыльные, лёгкие по капиталу куски — платежи, кредитование, консультирование — лучшим UX и меньшими издержками, разбирая банк на части. Старожилы защищаются доверием, масштабом, депозитами и лицензиями.","lens":"Угроза не в одном сопернике — это тысяча порезов по вашим лучшим маржам."},"96":{"concept":"Юнит-экономика клиента","explain":"Стоимость на клиента = пожизненная ценность (продукты × маржа × срок отношений) минус стоимость привлечения. Реальную прибыльность двигают кросс-продажи и удержание, а не только привлечение.","lens":"Война выигрывается на кросс-продажах и удержании, а не на ярких цифрах привлечения."},"97":{"concept":"Регуляторный и репутационный риск","explain":"Помимо финансового риска, штрафы, потеря лицензии и репутационный ущерб могут затмить любой отдельный кредитный убыток. В бизнесе, построенном на доверии, репутация — это капитал, и она накапливается в обе стороны.","lens":"В банкинге доверие — это баланс, который не отстроить заново за одну ночь."},"98":{"concept":"Капитал как дефицитный ресурс","explain":"Капитал ограничивает, сколько банк может кредитовать и расти, поэтому его распределение в пользу наивысшей доходности с учётом риска — ключевое стратегическое действие. Каждый бизнес конкурирует за один и тот же дефицитный капитал.","lens":"Подлинная работа CEO — решать, где каждая единица капитала заработает больше всего."},"99":{"concept":"Компромисс роста, риска и доходности","explain":"Можно гнаться за ростом, безопасностью или доходностью — редко за всеми тремя сразу. Быстрый рост часто означает ослабление кредитных стандартов; высокая доходность часто означает больше риска. Управление этим напряжением и есть стратегия.","lens":"Опасайтесь банка, растущего быстрее всех: обычно кто-то занижает цену риска, чтобы так расти."},"100":{"concept":"Табло показателей для CEO","explain":"Метрики, по которым по-настоящему судят о CEO банка: ROE против COE, капитал CET1, отношение расходов к доходам, NIM, качество активов и совокупная доходность акционеров — всё сбалансированное против риска. Всё сводится к ним.","lens":"Управляй банком ради этих цифр — и цена акции последует; гонись за одной ценой — и они тебя предадут."}}},"km":{"modules":{"Interest & Money":"ការប្រាក់ និងលុយ","The Bank Model":"គំរូអាជីវកម្មធនាគារ","Balance Sheet":"តារាងតុល្យការ","Lending & Credit":"ការផ្តល់ប្រាក់កម្ចី និងឥណទាន","Risk":"ហានិភ័យ","Capital & Rules":"ដើមទុន និងបទប្បញ្ញត្តិ","Treasury & ALM":" រតនាគារ និងការគ្រប់គ្រងទ្រព្យសកម្ម-បំណុល (ALM)","Payments & Ops":"ការទូទាត់ និងប្រតិបត្តិការ","Markets & Fees":"ទីផ្សារ និងកម្រៃសេវា","Strategy & Value":"យុទ្ធសាស្ត្រ និងតម្លៃ"},"ui":{"tagline1":"របៀបដែលធនាគារដំណើរការ","tagline2":"កាត ១០០ សន្លឹក ឆ្ពោះទៅកម្រិតថ្នាក់ដឹកនាំ (C-suite)","cardLabel":"កាត","masteredLabel":"បានស្ទាត់ជំនាញ","all":"ទាំងអស់","reveal":"បង្ហាញព័ត៌មានលម្អិត","masteredFlag":"បានស្ទាត់ជំនាញ","lensLabel":"ទស្សនៈថ្នាក់ដឹកនាំ (C-Suite)","flip":"ត្រឡប់","master":"ស្ទាត់ជំនាញ","shuffle":"ច្របល់","kbNav":"រុករក","kbFlip":"ត្រឡប់","kbMaster":"ស្ទាត់ជំនាញ","kbShuffle":"ច្របល់","cardAria":"កាតរៀន។ ចុចដើម្បីបង្ហាញចម្លើយ។","prevAria":"កាតមុន","nextAria":"កាតបន្ទាប់","flipAria":"ត្រឡប់កាត","markAria":"សម្គាល់ថាបានស្ទាត់ជំនាញ","shuffleAria":"ច្របល់សំណុំកាត"},"cards":{"1":{"concept":"របៀបដែលការប្រាក់កើតឡើង","explain":"ការប្រាក់គឺជាតម្លៃនៃពេលវេលា។ ១ ដុល្លារនៅថ្ងៃនេះមានតម្លៃច្រើនជាង ១ ដុល្លារនៅថ្ងៃស្អែក ព្រោះវាអាចយកទៅរកផលបាន ហើយថ្ងៃស្អែកមានហានិភ័យ និងអតិផរណា។ ការប្រាក់គឺជាអ្វីដែលអ្នកឱ្យខ្ចីគិតយក ដើម្បីទូទាត់ការបោះបង់តម្លៃពេលវេលា ដើម្បីទូទាត់អតិផរណាដែលរំពឹងទុក និងដើម្បីទូទាត់ហានិភ័យដែលប្រាក់មិនត្រូវបានសង។","lens":"គ្រប់ផលិតផលដែលធនាគារលក់ ជាមូលដ្ឋានគឺជាការជួលពេលវេលា និងហានិភ័យ។"},"2":{"concept":"ការប្រាក់ធម្មតា ធៀបនឹងការប្រាក់សមាសធាតុ","explain":"ការប្រាក់ធម្មតាគិតតែលើប្រាក់ដើមដំបូងប៉ុណ្ណោះ។ ការប្រាក់សមាសធាតុ (compound) គិតលើប្រាក់ដើមបូកនឹងការប្រាក់ដែលកកកុញទាំងអស់ ដូច្នេះវាកើនឡើងជាបែបស្វ័យគុណ មិនមែនជាបន្ទាត់ត្រង់ទេ។ ក្នុងរយៈពេលវែង ការគិតការប្រាក់សមាសធាតុមានឥទ្ធិពលលើសគេ ដែលជាមូលហេតុថាហេតុអ្វីភាពញឹកញាប់នៃការគិតសមាសធាតុ និងពេលវេលា មានសារៈសំខាន់ជាងអត្រាដែលបានប្រកាស។","lens":"ភាពខុសគ្នាតិចតួចនៃអត្រា ឬកម្រៃ គិតជាសមាសធាតុទៅជាតម្លៃដ៏ធំសម្បើមពេញមួយអាយុកាលនៃឥណទាន។"},"3":{"concept":"អត្រានាមមាត្រ ធៀបនឹងអត្រាពិត","explain":"អត្រានាមមាត្រ (nominal) គឺជាអត្រាដែលបានប្រកាស។ អត្រាពិត (real) បានដកអតិផរណាចេញ (ពិត ≈ នាមមាត្រ − អតិផរណា — ទំនាក់ទំនង Fisher)។ ប្រាក់កម្ចី ៦% ខណៈអតិផរណា ៥% ទទួលបានតែ ~១% នៃអំណាចទិញពិតប្រាកដប៉ុណ្ណោះ។","lens":"រំលៃដែលមើលទៅមាំមួនតាមនាមមាត្រ អាចស្តើង ឬអវិជ្ជមាន បើគិតជាតម្លៃពិត។"},"4":{"concept":"APR ធៀបនឹង APY (ទិន្នផលមានប្រសិទ្ធភាព)","explain":"APR គឺជាអត្រាប្រចាំឆ្នាំធម្មតា ដែលមិនគិតបញ្ចូលការគិតសមាសធាតុក្នុងឆ្នាំ។ APY (ឬ EAR) បញ្ចូលការគិតសមាសធាតុ ដូច្នេះវាតែងតែ ≥ APR។ ១២% គិតសមាសធាតុប្រចាំខែ ពិតជា ~១២.៦៨%។ ច្បាប់បើកបង្ហាញព័ត៌មានកំណត់ថាតម្លៃមួយណាដែលត្រូវបង្ហាញអតិថិជន។","lens":"របៀបដែលអ្នកដកស្រង់អត្រា ផ្លាស់ប្តូរលេខដែលអតិថិជនឃើញ — និងអ្វីដែលអ្នករកបានពិតប្រាកដ។"},"5":{"concept":"តម្លៃបច្ចុប្បន្ន និងការបញ្ចុះតម្លៃ","explain":"តម្លៃបច្ចុប្បន្ន (Present value) បម្លែងលុយអនាគតទៅជាលុយថ្ងៃនេះ ដោយចែកនឹង (1+r)ᵗ — ជាកត្តាបញ្ចុះតម្លៃ។ វាជាម៉ាស៊ីនចលករនៅពីក្រោយការកំណត់តម្លៃឥណទាន ការវាយតម្លៃមូលបត្របំណុល និងគ្រប់សំណួរថា 'លំហូរអនាគតនេះមានតម្លៃប៉ុន្មាននៅឥឡូវនេះ?'","lens":"ការបញ្ចុះតម្លៃ គឺជារបៀបដែលធនាគារកំណត់តម្លៃលើអ្វីៗដែលផ្តល់ផលតាមពេលវេលា។"},"6":{"concept":"អត្រាគ្មានហានិភ័យ","explain":"គឺជាទិន្នផលទ្រឹស្តីនៃការវិនិយោគដែលគ្មានហានិភ័យខកខាន តំណាងដោយបំណុលរដ្ឋាភិបាលរយៈពេលខ្លី ដូចជា Treasury bills។ វាជាកម្រិតទាបបំផុតដែលអត្រាផ្សេងទៀតទាំងអស់ត្រូវបានស្ថាបនាឡើង៖ អត្រាមានហានិភ័យ = អត្រាគ្មានហានិភ័យ + រំលៃសម្រាប់ឥណទាន សាច់ប្រាក់ងាយស្រួល និងរយៈពេល។","lens":"នៅពេលអត្រាគ្មានហានិភ័យផ្លាស់ប្តូរ គ្រប់ទ្រព្យសកម្មទាំងអស់នៅលើតារាងតុល្យការត្រូវកំណត់តម្លៃឡើងវិញ។"},"7":{"concept":"អតិផរណា និងអំណាចទិញ","explain":"អតិផរណាបំផ្លាញនូវអ្វីដែលលុយអាចទិញបានតាមពេលវេលា។ ធនាគាររងផលពីរដង៖ វាស៊ីតម្លៃពិតនៃប្រាក់កម្ចីអត្រាថេរដែលពួកគេកាន់កាប់ ហើយវាជំរុញការសម្រេចចិត្តអំពីអត្រាធនាគារកណ្តាល ដែលកំណត់ថ្លៃដើមមូលនិធិរបស់ពួកគេឡើងវិញ។","lens":"អតិផរណាផ្ទេរតម្លៃដោយស្ងាត់ៗ រវាងអ្នកខ្ចី និងអ្នកដាក់ប្រាក់បញ្ញើរបស់ធនាគារ។"},"8":{"concept":"ភាពញឹកញាប់នៃការគិតសមាសធាតុ","explain":"កាលណាការប្រាក់គិតសមាសធាតុកាន់តែញឹកញាប់ — ប្រចាំឆ្នាំ បន្ទាប់មកប្រចាំខែ ប្រចាំថ្ងៃ ជាបន្តបន្ទាប់ — ទិន្នផលមានប្រសិទ្ធភាពកាន់តែខ្ពស់សម្រាប់អត្រានាមមាត្រដូចគ្នា។ ការគិតសមាសធាតុជាបន្តបន្ទាប់ (continuous) ប្រើ eʳᵗ ហើយជាមូលដ្ឋាននៃការកំណត់តម្លៃឧបករណ៍និស្សន្ទ។","lens":"ភាពញឹកញាប់គឺជាឧបករណ៍លើក៖ វាផ្លាស់ប្តូរសេដ្ឋកិច្ចពិត ដោយមិនប៉ះអត្រាដែលបានផ្សាយ។"},"9":{"concept":"អត្រាថេរ ធៀបនឹងអត្រាអណ្តែត","explain":"អត្រាថេរ (fixed) ត្រូវបានចាក់សោសម្រាប់រយៈពេលកំណត់។ អត្រាអណ្តែត (floating) កំណត់ឡើងវិញតាមកាលកំណត់ ធៀបនឹងលេខសម្គាល់ (SOFR, EURIBOR) បូកនឹងរំលៃ។ អត្រាថេរផ្ទេរហានិភ័យអត្រាទៅលើអ្នកឱ្យខ្ចី ចំណែកអត្រាអណ្តែតផ្ទេរវាទៅលើអ្នកខ្ចី។","lens":"ល្បាយអត្រាថេរ/អណ្តែតលើឥណទាន សម្រេចថានរណាហូរឈាម នៅពេលអត្រាផ្លាស់ប្តូរ។"},"10":{"concept":"រយៈពេលកំណត់ និងខ្សែកោងទិន្នផល","explain":"ខ្សែកោងទិន្នផល (yield curve) បង្ហាញអត្រាការប្រាក់ធៀបនឹងរយៈពេលកំណត់។ ជាធម្មតាវាឡើងទ្រេត — យូរជាងន័យថាទិន្នផលច្រើនជាងសម្រាប់រយៈពេល និងហានិភ័យអតិផរណា — ចំណែកខ្សែកោងបញ្ច្រាស (រយៈពេលខ្លីខ្ពស់ជាងវែង) តាមប្រវត្តិសាស្ត្របានព្រមានពីវិបត្តិសេដ្ឋកិច្ច។","lens":"ជម្រាលនៃខ្សែកោង គឺជាការព្យាករណ៍អាកាសធាតុសម្រាប់រំលៃធនាគារ ក្នុងមួយបន្ទាត់។"},"11":{"concept":"ខ្ចីរយៈខ្លី ឱ្យខ្ចីរយៈវែង","explain":"ធនាគារទទួលប្រាក់បញ្ញើរយៈខ្លីដែលអាចដកវិញបាន ហើយបម្លែងវាទៅជាប្រាក់កម្ចីរយៈវែងដែលពិបាកបម្លែងជាសាច់ប្រាក់ ដោយចាប់យកភាពខុសគ្នា។ 'ការបម្លែងរយៈពេលកំណត់' នេះ គឺជាសេវាសំខាន់ដែលធនាគារផ្តល់ — ព្រមទាំងភាពផុយស្រួយសំខាន់របស់ពួកគេ។","lens":"អាជីវកម្មនេះគឺជាការភ្នាល់ថា មិនមែនមនុស្សគ្រប់គ្នាសុំប្រាក់វិញក្នុងពេលតែមួយនោះទេ។"},"12":{"concept":"រំលៃការប្រាក់សុទ្ធ (NIM)","explain":"NIM = (ការប្រាក់ដែលរកបាន − ការប្រាក់ដែលបង់) ÷ ទ្រព្យសកម្មរកការប្រាក់ជាមធ្យម ជាធម្មតា ១.៥–៤%។ វាជាឧបករណ៍វាស់ចម្បងនៃប្រាក់ចំណេញរបស់ម៉ាស៊ីនផ្តល់ឥណទាន ហើយវាធំឡើងនៅពេលទិន្នផលទ្រព្យសកម្មកើនលឿនជាងថ្លៃដើមមូលនិធិ។","lens":"NIM ខុសគ្នាបន្តិចបន្តួច (basis points) លើឥណទានរាប់ពាន់ពាន់លានដុល្លារ គឺជាលុយពិតប្រាកដ។"},"13":{"concept":"ចំណូលការប្រាក់ ធៀបនឹងចំណូលមិនមែនការប្រាក់","explain":"ចំណូលការប្រាក់សុទ្ធកើតចេញពីរំលៃឥណទាន។ ចំណូលមិនមែនការប្រាក់មកពីកម្រៃ កម្រៃជើងសារ ការជួញដូរ និងសេវាកម្ម។ ល្បាយនេះកំណត់ថាតើប្រាក់ចំណេញរសើបនឹងអត្រាកម្រិតណា — និងបានធ្វើពិពិធកម្មកម្រិតណា។","lens":"ក្រុមប្រឹក្សាភិបាលឱ្យតម្លៃខ្ពស់ដល់ចំណូលកម្រៃ ព្រោះវានៅតែផ្តល់ចំណេញ នៅពេលអត្រាបង្ខាំងរំលៃ។"},"14":{"concept":"ចំណូលកម្រៃ និងកម្រៃជើងសារ","explain":"លុយដែលរកបានពីសេវាកម្ម ជាជាងពីការឱ្យខ្ចី៖ កម្រៃគណនី និងកាត ការប្រឹក្សា ការគ្រប់គ្រងទ្រព្យសកម្ម និងកម្រៃប្រតិបត្តិការ។ វាប្រើដើមទុនតិច និងស្អិតជាប់ ដូច្នេះទីផ្សារឱ្យតម្លៃវិនិយោគខ្ពស់ជាង។","lens":"អាជីវកម្មកម្រៃ បម្លែងអ្នកឱ្យខ្ចីតាមតារាងតុល្យការ ទៅជាអាជីវកម្មសេវាកម្ម។"},"15":{"concept":"អន្តរការីហិរញ្ញវត្ថុ","explain":"ធនាគារឋិតនៅចន្លោះអ្នកសន្សំ និងអ្នកខ្ចី ដោះស្រាយភាពមិនត្រូវគ្នាខាងទំហំ រយៈពេលកំណត់ និងចំណង់ចង់បានហានិភ័យ ព្រមទាំងពិនិត្យ និងតាមដានអ្នកខ្ចីដែលអ្នកសន្សំមិនអាចធ្វើបាន។ ការធ្វើអន្តរការីនោះ គឺជាតម្លៃដែលពួកគេបន្ថែម។","lens":"ការកាត់អន្តរការី — ហ្វីនថេក ទីផ្សារមូលធន stablecoin — វាយប្រហារយ៉ាងជាក់លាក់លើកន្លែងកណ្តាលនេះ។"},"16":{"concept":"រំលៃ (Spread)","explain":"គឺជាគម្លាតរវាងអ្វីដែលធនាគាររកបានលើទ្រព្យសកម្ម និងអ្វីដែលបង់លើបំណុល។ ស្ទើរតែអ្វីៗទាំងអស់ក្នុងធនាគារ ត្រូវបានរៀបចំដើម្បីពង្រីករំលៃនេះ ការពារវា ឬកំណត់តម្លៃហានិភ័យបញ្ចូលទៅក្នុងវាឱ្យបានត្រឹមត្រូវ។","lens":"ពង្រីកឥណទាន ការពាររំលៃ គ្រប់គ្រងការខាតបង់ — ល្បែងទាំងមូលក្នុងឃ្លាមួយ។"},"17":{"concept":"ទុនបម្រុងផ្នែក និងការបង្កើតលុយ","explain":"ធនាគារកាន់តែប្រាក់បញ្ញើមួយផ្នែកតូចជាទុនបម្រុង ហើយឱ្យខ្ចីនៅសល់។ ប្រាក់កម្ចីនីមួយៗក្លាយជាប្រាក់បញ្ញើថ្មីនៅកន្លែងផ្សេង ដែលត្រូវបានឱ្យខ្ចីម្តងទៀត។ ជារួម ប្រព័ន្ធធនាគារបង្កើតលុយតាមរយៈការឱ្យខ្ចី ដែលកំណត់ព្រំដោយដើមទុន និងទុនបម្រុង។","lens":"ធនាគារមិនត្រឹមតែផ្លាស់ទីលុយទេ — ជារួម ពួកគេផលិតវា។"},"18":{"concept":"ប្រាក់បញ្ញើជាមូលនិធិ","explain":"ប្រាក់បញ្ញើអតិថិជនគឺជាមូលនិធិដែលថោកបំផុត និងស្អិតជាប់បំផុតរបស់ធនាគារ — ជាញឹកញាប់ថ្លៃដើមស្ទើរតែសូន្យ និងចេញយឺត។ គុណភាពនៃមូលដ្ឋានប្រាក់បញ្ញើ គឺជាទីតាំងការពារប្រកួតប្រជែងដ៏រឹងមាំបំផុតមួយក្នុងវិស័យធនាគារ។","lens":"ប្រាក់បញ្ញើថោក និងស្មោះត្រង់ គឺជាគ្រឿងអលង្ការមកុដ។ ការបាត់បង់វា បង្កើនថ្លៃដើមនៃអ្វីៗទាំងអស់។"},"19":{"concept":"មូលនិធិលក់ដុំ ធៀបនឹងលក់រាយ","explain":"មូលនិធិលក់រាយ គឺជាប្រាក់បញ្ញើតូចៗច្រើន និងស្អិតជាប់។ មូលនិធិលក់ដុំ គឺជាប្រាក់ចំនួនធំ រសើបនឹងអត្រា ពីទីផ្សារ និងស្ថាប័ន ដែលអាចរត់ចេញយ៉ាងលឿន។ ការពឹងផ្អែកលើមូលនិធិលក់ដុំហួសហេតុ គឺជាចំណុចស្នូលនៃការដួលរលំឆ្នាំ ២០០៨។","lens":"ល្បាយមូលនិធិ គឺជាសំណួរនៃការរស់រាន មិនមែនគ្រាន់តែជាសំណួរថ្លៃដើមទេ។"},"20":{"concept":"ថ្លៃដើមមូលនិធិ","explain":"គឺជាអត្រាលាយបញ្ចូលគ្នាដែលធនាគារបង់លើមូលនិធិទាំងអស់ — ប្រាក់បញ្ញើ បំណុល លក់ដុំ។ វាកំណត់កម្រិតទាបបំផុតនៃការកំណត់តម្លៃឥណទាន៖ ឱ្យខ្ចីទាបជាងថ្លៃដើមមូលនិធិបូកចំណាយបូកការខាតបង់ដែលរំពឹងទុក នោះអ្នកខាតលុយ។","lens":"អ្នកមិនអាចរីកលូតលាស់លើសពីថ្លៃដើមមូលនិធិដែលខូចនោះទេ។"},"21":{"concept":"ការអានតារាងតុល្យការធនាគារ","explain":"សម្រាប់ធនាគារ តារាងតុល្យការត្រូវបានបញ្ច្រាសពីក្រុមហ៊ុនធម្មតា៖ ប្រាក់កម្ចីជាទ្រព្យសកម្ម (លុយដែលគេជំពាក់វា) ប្រាក់បញ្ញើជាបំណុល (លុយដែលវាជំពាក់គេ)។ មូលធនគឺជាបន្ទះស្តើងនៅចន្លោះ ដែលស្រូបយកការខាតបង់។","lens":"ធនាគារ គឺជាតារាងតុល្យការរបស់វា — របាយការណ៍ចំណេញ-ខាត គ្រាន់តែជាអ្វីដែលតារាងតុល្យការនោះរកបាន។"},"22":{"concept":"ទ្រព្យសកម្ម និងបំណុល ដែលឆ្លុះគ្នា","explain":"ប្រាក់បញ្ញើរបស់អ្នកគឺជាទ្រព្យសកម្មរបស់អ្នក ប៉ុន្តែជាបំណុលរបស់ធនាគារ។ ប្រាក់កម្ចីរបស់អ្នកគឺជាទ្រព្យសកម្មរបស់ធនាគារ ប៉ុន្តែជាបំណុលរបស់អ្នក។ ការយល់ពីកញ្ចក់ឆ្លុះនេះ គឺជាកូនសោនៃការអានគណនីធនាគារណាមួយ។","lens":"ទ្រព្យសកម្មរបស់ភាគីម្ខាង តែងតែជាបំណុលរបស់ភាគីម្ខាងទៀត — ធនាគារធ្វើឱ្យការពិតនោះទៅជាឧស្សាហកម្ម។"},"23":{"concept":"មូលធន / ដើមទុន","explain":"គឺជាមូលនិធិម្ចាស់ភាគហ៊ុន៖ ទ្រព្យសកម្មដកបំណុល។ វាជាឆ្នុកស្រូបយកការខាតបង់មុនពេលប៉ះពាល់អ្នកដាក់ប្រាក់បញ្ញើ ហើយជាមូលដ្ឋានសម្រាប់វាស់ទិន្នផល (ROE) — ជាធម្មតាមានតែ ៥–១០% នៃតារាងតុល្យការប៉ុណ្ណោះ។","lens":"ដើមទុនគឺជាទាំងឆ្នុកស្រូបយកការឆក់ ព្រមទាំងជាភាគបែងនៃប័ណ្ណពិន្ទុ។"},"24":{"concept":"សមាសភាពនៃឥណទាន","explain":"គឺជាល្បាយនៃផ្នែកទ្រព្យសកម្ម — កម្ចីទិញផ្ទះ កម្ចីសាជីវកម្ម ឥណទានអ្នកប្រើប្រាស់ កាត — ចែកតាមវិស័យ និងភូមិសាស្ត្រ។ ការប្រមូលផ្តុំ និងគុណភាពរបស់វា ជំរុញទាំងទិន្នផលដែលរកបាន និងការខាតបង់ដែលទទួលរង។","lens":"បង្ហាញខ្ញុំពីការប្រមូលផ្តុំនៃឥណទាន នោះខ្ញុំនឹងបង្ហាញអ្នកពីកន្លែងដែលវិបត្តិបន្ទាប់នឹងធ្លាក់ចុះ។"},"25":{"concept":"ធាតុក្រៅតារាងតុល្យការ","explain":"គឺជាការប្តេជ្ញាចិត្ត និងការប៉ះពាល់ដែលមិន (នៅឡើយ) នៅលើតារាងតុល្យការ៖ វិស័យឥណទានមិនទាន់ដក ការធានា លិខិតឥណទាន និស្សន្ទ។ ពួកវាមានហានិភ័យពិតប្រាកដ ហើយអាចធ្លាក់មកលើតារាងតុល្យការក្នុងវិបត្តិ។","lens":"អ្វីដែលនៅក្រៅតារាងតុល្យការ បានបញ្ចប់ធនាគារច្រើនជាងអ្វីដែលនៅលើវាទៅទៀត។"},"26":{"concept":"របាយការណ៍លទ្ធផល","explain":"បន្ទាត់កំពូលគឺចំណូលការប្រាក់សុទ្ធ បូកចំណូលកម្រៃ បូកចំណូលពីការជួញដូរ។ ដកចំណាយប្រតិបត្តិការ និងសំវិធានធនការខាតបង់ឥណទាន ដើម្បីទៅដល់ប្រាក់ចំណេញមុនបង់ពន្ធ។ សំវិធានធនគឺជាកត្តាប្រែប្រួល ដែលបម្លែងឆ្នាំល្អទៅជាឆ្នាំអាក្រក់។","lens":"ចំណូលត្រូវបានជ្រើសរើស ចំណែកសំវិធានធនត្រូវបានបង្ហាញ — នោះជាកន្លែងដែលការពិតលាក់ខ្លួន។"},"27":{"concept":"ទិន្នផលលើទ្រព្យសកម្ម (ROA)","explain":"ចំណេញសុទ្ធ ÷ ទ្រព្យសកម្មសរុប — គឺជារបៀបដែលតារាងតុល្យការទាំងមូលបង្កើតប្រាក់ចំណេញប្រកបដោយប្រសិទ្ធភាព។ ប្រហែល ១% គឺរឹងមាំសម្រាប់ធនាគារ។ ROA ទាបគឺជាលក្ខណៈពិសេស ហើយធនាគារបំពេញវាដោយបរិមាណ និងឥណពន្ធ។","lens":"ROA ស្តើងគឺជារឿងធម្មតា។ ឥណពន្ធ (leverage) ដែលដាក់ពីលើ គឺជាអ្វីដែលបង្កើតទិន្នផលមូលធន។"},"28":{"concept":"ទិន្នផលលើមូលធន (ROE)","explain":"ចំណេញសុទ្ធ ÷ មូលធនម្ចាស់ភាគហ៊ុន — ជាឧបករណ៍វាស់ប្រាក់ចំណេញចម្បង។ ROE ≈ ROA × ឥណពន្ធ ដូច្នេះ ROA ១% ដែលមានឥណពន្ធ ១០× ផ្តល់ ROE ១០%។","lens":"ROE បង្កើតតម្លៃ តែនៅពេលវាលើសពីថ្លៃដើមមូលធន — លេខដែលគ្រប់គ្រងថ្នាក់ដឹកនាំ។"},"29":{"concept":"ឥណពន្ធ (Leverage)","explain":"ធនាគារផ្តល់មូលនិធិទ្រព្យសកម្មភាគច្រើនដោយបំណុល និងប្រាក់បញ្ញើ មិនមែនមូលធនទេ ដូច្នេះទ្រព្យសកម្មអាចមាន ១០–២០× នៃមូលធន។ ឥណពន្ធពង្រីក ROE — និងការខាតបង់៖ ការខាតទ្រព្យសកម្ម ៥% នៅឥណពន្ធ ១៥× លុបបំបាត់មូលធនចោល។","lens":"ឥណពន្ធ គឺជាឧបករណ៍ពង្រីក — វាធ្វើឱ្យគ្រាល្អកាន់តែល្អ និងគ្រាអាក្រក់កាន់តែស្លាប់។"},"30":{"concept":"តម្លៃតាមបញ្ជី ធៀបនឹងតម្លៃទីផ្សារ","explain":"តម្លៃតាមបញ្ជី (book value) គឺជាមូលធនតាមគណនេយ្យ។ តម្លៃទីផ្សារគឺជាអ្វីដែលវិនិយោគិននឹងបង់។ អត្រាតម្លៃធៀបនឹងតម្លៃតាមបញ្ជី (price-to-book) លើសពី ១ មានន័យថាទីផ្សារជឿថាធនាគាររកបានលើសពីថ្លៃដើមមូលធន។ ក្រោម ១ បង្ហាញការសង្ស័យ។","lens":"Price-to-book ក្រោម ១ គឺជាទីផ្សារកំពុងនិយាយថា ROE របស់អ្នកមិនគ្របដណ្តប់លើហានិភ័យរបស់វាទេ។"},"31":{"concept":"ដំណើរការឥណទាន","explain":"ការវាយតម្លៃ (underwriting)៖ វាយតម្លៃអ្នកខ្ចី រៀបចំរចនាសម្ព័ន្ធកម្ចី កំណត់តម្លៃតាមហានិភ័យ អនុម័តក្នុងព្រំដែនកំណត់ បន្ទាប់មកតាមដានរហូតដល់ផុតកំណត់។ ការបង្កើតឥណទានប្រកបដោយវិន័យ គឺជាទម្រង់ថោកបំផុតនៃការគ្រប់គ្រងហានិភ័យ។","lens":"ការខាតបង់ត្រូវបានបង្កើតឡើងនៅពេលបង្កើតឥណទាន ហើយគ្រាន់តែត្រូវបានទទួលស្គាល់នៅពេលក្រោយ។"},"32":{"concept":"5 Cs នៃឥណទាន","explain":"Character (កំណត់ត្រាប្រវត្តិ), Capacity (លំហូរសាច់ប្រាក់ដើម្បីសង), Capital (ភាគហ៊ុនផ្ទាល់ខ្លួនរបស់អ្នកខ្ចី), Collateral (ទ្រព្យបញ្ចាំបម្រុង), និង Conditions (សេដ្ឋកិច្ច និងគោលបំណង)។ ជាបញ្ជីត្រួតពិនិត្យអមតៈអំពីអ្នកណាដែលគួរឱ្យខ្ចី។","lens":"គំរូ (framework) ចាស់ទៅ ប៉ុន្តែ 5 Cs នៅតែពន្យល់ការខកខានសងភាគច្រើន។"},"33":{"concept":"កម្ចីមានទ្រព្យបញ្ចាំ ធៀបនឹងគ្មានទ្រព្យបញ្ចាំ","explain":"កម្ចីមានទ្រព្យបញ្ចាំ (secured) ត្រូវបានគាំទ្រដោយទ្រព្យបញ្ចាំដែលធនាគារអាចរឹបអូស (កម្ចីទិញផ្ទះ កម្ចីទិញរថយន្ត)។ កម្ចីគ្មានទ្រព្យបញ្ចាំ (unsecured) ពឹងតែលើការសន្យាថានឹងសង (កាត កម្ចីផ្ទាល់ខ្លួន) ដូច្នេះមានអត្រា និងការខាតបង់ខ្ពស់ជាង។","lens":"អវត្តមាននៃទ្រព្យបញ្ចាំ ត្រូវតែកំណត់តម្លៃ — មិនដូច្នេះទេ វាក្លាយជាការខាតបង់។"},"34":{"concept":"ទ្រព្យបញ្ចាំ និងសមាមាត្រកម្ចីធៀបនឹងតម្លៃ (LTV)","explain":"LTV = កម្ចី ÷ តម្លៃទ្រព្យបញ្ចាំ។ កម្ចីទិញផ្ទះ LTV ៨០% ទុកឆ្នុកមូលធន ២០% មុនពេលធនាគារធ្លាក់ក្រោមទឹក។ តម្លៃទ្រព្យបញ្ចាំធ្លាក់ចុះ — វិបត្តិលំនៅដ្ឋាន — បម្លែង LTV ដែលធ្លាប់សុវត្ថិភាព ទៅជាគ្រោះថ្នាក់។","lens":"ទ្រព្យបញ្ចាំល្អ តែត្រឹមតម្លៃរបស់វានៅក្នុងស្ថានភាពតានតឹងជាក់លាក់ដែលអ្នកត្រូវការវាប៉ុណ្ណោះ។"},"35":{"concept":"ហានិភ័យឥណទាន និងប្រូបាប៊ីលីតេនៃការខកខានសង","explain":"ហានិភ័យឥណទានគឺជាឱកាសដែលអ្នកខ្ចីមិនសង។ PD គឺជាប្រូបាប៊ីលីតេប៉ាន់ស្មាននៃការខកខានសង (default) ក្នុងរយៈពេលកំណត់ ជាធម្មតាមួយឆ្នាំ — ជាធាតុចូលដំបូងសម្រាប់កំណត់ទំហំការខាតបង់ដែលរំពឹងទុក។","lens":"PD គឺជាការព្យាករណ៍ ហើយការព្យាករណ៍បរាជ័យ ជាក់លាក់នៅពេលមនុស្សគ្រប់គ្នាខកខានសងជាមួយគ្នា។"},"36":{"concept":"LGD និង EAD","explain":"Loss Given Default (LGD) គឺជាភាគរយដែលមិនអាចប្រមូលវិញបាន បន្ទាប់ពីការខកខានសង បន្ទាប់ពីដកទ្រព្យបញ្ចាំ។ Exposure at Default (EAD) គឺជាចំនួនដែលជំពាក់នៅពេលកើតការខកខានសង។ រួមជាមួយ PD ពួកវាកំណត់ទំហំការខាតបង់។","lens":"ការប្រមូលវិញ (1 − LGD) គឺជាកន្លែងដែលក្រុមដោះស្រាយឥណទានពូកែ រកចំណូលដោយស្ងាត់ៗ។"},"37":{"concept":"ការខាតបង់ដែលរំពឹងទុក (PD × LGD × EAD)","explain":"ការខាតបង់ដែលរំពឹងទុក = ប្រូបាប៊ីលីតេនៃការខកខានសង × ការខាតបង់ពេលខកខានសង × ការប៉ះពាល់ពេលខកខានសង។ វាជាការខាតបង់ជាមធ្យមដែលអ្នកគ្រោងទុក និងកំណត់តម្លៃចូលក្នុងកម្ចី — គ្របដណ្តប់ដោយសំវិធានធន និងរំលៃ មិនមែនដោយដើមទុនទេ។","lens":"ការខាតបង់ដែលរំពឹងទុកគឺជាថ្លៃដើមនៃការធ្វើអាជីវកម្ម។ ការខាតបង់ដែលមិនរំពឹងទុក គឺជាមូលហេតុដែលមានដើមទុន។"},"38":{"concept":"សំវិធានធនការខាតបង់ឥណទាន","explain":"គឺជាទុនបម្រុងដែលទុកសម្រាប់ការខាតបង់ឥណទានដែលរំពឹងទុក។ ច្បាប់ទំនើប — IFRS 9 និង CECL — តម្រូវឱ្យកត់ត្រាការខាតបង់ដែលរំពឹងទុកលើមូលដ្ឋានមើលទៅមុខ ជាជាងរង់ចាំការខកខានសង ដែលធ្វើឱ្យសំវិធានធនប្រែប្រួលច្រើនជាង។","lens":"ពេលវេលានៃការធ្វើសំវិធានធន ផ្លាស់ប្តូរប្រាក់ចំណេញរវាងឆ្នាំ — ត្រូវឃ្លាំមើលវាឱ្យបានហ្មត់ចត់។"},"39":{"concept":"ឥណទានមិនដំណើរការ (NPLs)","explain":"គឺជាកម្ចីដែលអ្នកខ្ចីបានឈប់សង ជាធម្មតាហួសកំណត់ ៩០ថ្ងៃ ឬច្រើនជាង។ សមាមាត្រ NPL គឺជាឧបករណ៍វាស់គុណភាពទ្រព្យសកម្មចម្បង។ NPL កើនឡើងស៊ីដើមទុន និងបញ្ជាក់ពីឥណទានដែលកំពុងធ្លាក់ចុះ។","lens":"និន្នាការ NPL នាំមុខប្រាក់ចំណេញ — វាប្រាប់អ្នកពីសំវិធានធនឆ្នាំក្រោយ តាំងពីថ្ងៃនេះ។"},"40":{"concept":"ការកំណត់តម្លៃឥណទានផ្អែកលើហានិភ័យ","explain":"តម្លៃ = ថ្លៃដើមមូលនិធិ + ចំណាយប្រតិបត្តិការ + ការខាតបង់ដែលរំពឹងទុក + បន្ទុកដើមទុន + រំលៃគោលដៅ។ អ្នកខ្ចីមានហានិភ័យខ្ពស់ត្រូវបង់ច្រើនជាង ដើម្បីគ្របដណ្តប់ការខាតបង់ដែលរំពឹងទុកខ្ពស់ និងការប្រើដើមទុនធ្ងន់ជាង។","lens":"កំណត់តម្លៃហានិភ័យទាបពេក ដើម្បីឈ្នះបរិមាណ នោះអ្នកគ្រាន់តែកំពុងទិញការខាតបង់ក្នុងតម្លៃបញ្ចុះ។"},"41":{"concept":"ប្រភេទហានិភ័យសំខាន់ទាំងបួន","explain":"ឥណទាន (អ្នកខ្ចីមិនសង), ទីផ្សារ (តម្លៃផ្លាស់ប្តូរប្រឆាំងនឹងអ្នក), សាច់ប្រាក់ងាយស្រួល (អ្នកមិនអាចផ្តល់មូលនិធិ ឬទូទាត់), និងប្រតិបត្តិការ (មនុស្ស ដំណើរការ ប្រព័ន្ធបរាជ័យ)។ ស្ទើរតែគ្រប់ការខាតបង់របស់ធនាគារ សម្គាល់ទៅមួយក្នុងចំណោមបួននេះ។","lens":"ហានិភ័យផ្សេងគ្នា ការពិតដ៏ពិបាកមួយ៖ ពួកវាទាំងអស់ទាក់ទងគ្នាយ៉ាងកាចសាហាវក្នុងវិបត្តិ។"},"42":{"concept":"ហានិភ័យប្រមូលផ្តុំ","explain":"គឺជាការប៉ះពាល់ច្រើនពេកទៅលើអ្នកខ្ចីតែម្នាក់ វិស័យ ភូមិសាស្ត្រ ឬប្រភេទទ្រព្យបញ្ចាំតែមួយ។ ពិពិធកម្មគឺជាអាហារឥតគិតថ្លៃតែមួយគត់។ ការប្រមូលផ្តុំ គឺជារបៀបដែលឥណទាន 'សុវត្ថិភាព' ផ្ទុះ — ថាមពល អចលនទ្រព្យ ដៃគូតែម្នាក់។","lens":"ការខាតបង់ធំៗរបស់ធនាគារនីមួយៗ មានរឿងរ៉ាវនៃការប្រមូលផ្តុំនៅពីក្រោយ។"},"43":{"concept":"ហានិភ័យទីផ្សារ និង VaR","explain":"គឺជាហានិភ័យដែលតម្លៃទីផ្សារ — អត្រា រូបិយប័ណ្ណ ភាគហ៊ុន រំលៃឥណទាន — ផ្លាស់ប្តូរប្រឆាំងនឹងតួនាទីជួញដូរ។ Value at Risk (VaR) ប៉ាន់ស្មានការខាតបង់អតិបរមាក្នុងរយៈពេលកំណត់ នៅកម្រិតទំនុកចិត្តមួយ ប៉ុន្តែងងឹតភ្នែកចំពោះកន្ទុយ (tail) ដែលនៅលើសពីនោះ។","lens":"VaR ព្យាករណ៍អាកាសធាតុ មិនមែនព្យុះម្តងក្នុងមួយទសវត្សរ៍ទេ — កុំច្រឡំវាទាំងពីរ។"},"44":{"concept":"ហានិភ័យសាច់ប្រាក់ងាយស្រួល","explain":"គឺជាហានិភ័យនៃការមិនអាចបំពេញកាតព្វកិច្ចនៅពេលដល់កំណត់ ដោយមិនលក់ទ្រព្យសកម្មប្រញាប់ក្នុងតម្លៃថោក។ ធនាគារអាចមានលទ្ធភាពសងបំណុលពេញលេញ ប៉ុន្តែនៅតែបរាជ័យ បើវាមិនអាចផ្តល់មូលនិធិខ្លួនឯង — សាច់ប្រាក់ងាយស្រួលសម្លាប់លឿនជាងឥណទាន។","lens":"លទ្ធភាពសងបំណុលយឺត។ ការដកប្រាក់ភ្ញាក់ផ្អើល (run) វាស់ជាម៉ោង។"},"45":{"concept":"ហានិភ័យអត្រាការប្រាក់ក្នុងឥណទានធនាគារ (IRRBB)","explain":"IRRBB គឺជាហានិភ័យដែលការផ្លាស់ប្តូរអត្រា បំផ្លាញតម្លៃ ឬចំណូលនៃទ្រព្យសកម្ម និងបំណុលដែលមិនជួញដូរ — ឧទាហរណ៍ ការផ្តល់មូលនិធិកម្ចីទិញផ្ទះអត្រាថេររយៈវែង ដោយប្រាក់បញ្ញើថោក ដែលភ្លាមៗកំណត់តម្លៃឡើងវិញខ្ពស់ជាង។","lens":"Silicon Valley Bank ជាមូលដ្ឋាន គឺជាការបរាជ័យ IRRBB ដែលមិនបានការពារហានិភ័យ (hedge)។"},"46":{"concept":"ហានិភ័យប្រតិបត្តិការ","explain":"គឺជាការខាតបង់ពីដំណើរការ មនុស្ស ប្រព័ន្ធ ឬព្រឹត្តិការណ៍ខាងក្រៅដែលបរាជ័យ — ការក្លែងបន្លំ តាមអ៊ីនធឺណិត ការដាច់សេវា ការលក់ខុសបែប បញ្ហាច្បាប់។ ពិបាកកំណត់បរិមាណ គ្មានព្រំដែននៅកន្ទុយ ហើយកាន់តែក្លាយជាហានិភ័យលេចធ្លោក្នុងធនាគារឌីជីថល។","lens":"ការខាតបង់ធំបន្ទាប់ ប្រហែលមិនមែនជាកម្ចីអាក្រក់ទេ — វាអាចជាការលួចទិន្នន័យ ឬការផាកពិន័យ។"},"47":{"concept":"ហានិភ័យគំរូ (Model risk)","explain":"គឺជាហានិភ័យដែលគំរូ (models) ដែលធនាគារពឹងផ្អែក ដើម្បីកំណត់តម្លៃ វាយតម្លៃ និងវាស់ហានិភ័យ គ្រាន់តែខុស — សម្មតិកម្មអាក្រក់ ទិន្នន័យអាក្រក់ ឬប្រើក្រៅពីការរចនារបស់វា។ ឆ្នាំ ២០០៨ ក្នុងចំណែកខ្លះ គឺជាព្រឹត្តិការណ៍ហានិភ័យគំរូ។","lens":"លេខច្បាស់លាស់ពីគំរូខុស គ្រោះថ្នាក់ជាងភាពមិនច្បាស់លាស់ដែលបានទទួលស្គាល់។"},"48":{"concept":"ខ្សែការពារបីជាន់","explain":"ជាន់ទី ១៖ អាជីវកម្មជាម្ចាស់ហានិភ័យរបស់ខ្លួន។ ជាន់ទី ២៖ ផ្នែកហានិភ័យ និងអនុលោមភាពកំណត់ព្រំដែន និងជំទាស់។ ជាន់ទី ៣៖ សវនកម្មផ្ទៃក្នុងពិនិត្យថាទាំងអស់ដំណើរការ។ នេះជាឆ្អឹងខ្នងអភិបាលកិច្ចនៃការគ្រប់គ្រងហានិភ័យ។","lens":"នៅពេលខ្សែទាំងបីព្រិលៗ ការទទួលខុសត្រូវ — និងការគ្រប់គ្រង — រលាយបាត់ដោយស្ងាត់ៗ។"},"49":{"concept":"ចំណង់ចង់បានហានិភ័យ និង RAROC","explain":"ចំណង់ចង់បានហានិភ័យ (risk appetite) គឺជាព្រំដែនដែលក្រុមប្រឹក្សាភិបាលបានប្រកាសលើហានិភ័យដែលទទួលយកសម្រាប់ទិន្នផល។ RAROC — ទិន្នផលលើដើមទុនកែសម្រួលតាមហានិភ័យ — វាស់ទិន្នផលក្នុងមួយឯកតានៃដើមទុនហានិភ័យ ដូច្នេះអាជីវកម្មប្រកួតលើប្រសិទ្ធភាព មិនមែនត្រឹមតែទំហំទេ។","lens":"កំណើនដែលមិនរាប់បញ្ចូលទិន្នផលកែសម្រួលតាមហានិភ័យ បំផ្លាញតម្លៃ ខណៈមើលទៅដូចជាជោគជ័យ។"},"50":{"concept":"ការធ្វើតេស្តភាពតានតឹង","explain":"គឺជាការក្លែងធ្វើ (simulate) សេណារីយ៉ូធ្ងន់ធ្ងរ-ប៉ុន្តែអាចកើតឡើង — វិបត្តិសេដ្ឋកិច្ច ការឆក់អត្រា ការធ្លាក់ចុះទីផ្សារ — ដើម្បីមើលថាតើដើមទុន និងសាច់ប្រាក់ងាយស្រួលអាចរស់រានបានឬអត់។ និយតករតម្រូវឱ្យធ្វើ (CCAR, EBA) ហើយប្រើវាដើម្បីទប់ការចែកភាគលាភ។","lens":"ការធ្វើតេស្តភាពតានតឹង គឺជាកន្លែងដែលក្រុមប្រឹក្សាភិបាលរៀនពីអ្វីដែលខ្លួនអាចមានលទ្ធភាពខាតបង់បានពិតប្រាកដ។"},"51":{"concept":"ហេតុអ្វីបានជាដើមទុនមានសារៈសំខាន់","explain":"ដើមទុន (capital) គឺជាខ្នើយសមធម៌ (equity) ដែលស្រូបយកការខាតបង់ដែលមិនបានរំពឹងទុក ដើម្បីកុំឱ្យអ្នកដាក់ប្រាក់បញ្ញើ និងប្រព័ន្ធហិរញ្ញវត្ថុត្រូវទទួលរង។ បើមានតិចពេក ការប៉ះទង្គិចមួយអាចធ្វើឱ្យក្ស័យធន បើមានច្រើនពេក ចំណេញនឹងធ្លាក់ចុះ។ ការកំណត់កម្រិតឱ្យបានត្រឹមត្រូវ គឺជាភាពតានតឹងស្នូលនៃបទប្បញ្ញត្តិ។","lens":"ដើមទុនគឺជាតម្លៃដែលត្រូវបង់ដើម្បីទទួលបានសិទ្ធិទទួលយកប្រាក់បញ្ញើ។"},"52":{"concept":"ក្របខ័ណ្ឌ Basel","explain":"ស្តង់ដារអន្តរជាតិ — Basel I, II និង III — ដែលកំណត់ច្បាប់អប្បបរមាស្តីពីដើមទុន សន្ទនីយភាព (liquidity) និងអានុភាព (leverage) សម្រាប់ធនាគារ។ Basel III ដែលកើតឡើងក្រោយឆ្នាំ 2008 បានបង្កើនគុណភាព និងបរិមាណដើមទុនយ៉ាងខ្លាំង ព្រមទាំងបន្ថែមច្បាប់ស្តីពីសន្ទនីយភាព។","lens":"Basel គឺជាសៀវភៅច្បាប់សកលដែលកំណត់នូវអ្វីដែលធនាគារនីមួយៗអាចធ្វើ និងមិនអាចធ្វើ។"},"53":{"concept":"ទ្រព្យសកម្មថ្លឹងតាមហានិភ័យ (RWA)","explain":"ទ្រព្យសកម្មដែលថ្លឹងតាមកម្រិតហានិភ័យ៖ សាច់ប្រាក់ជិត 0%, កម្ចីទិញផ្ទះ ~35%, កម្ចីសាជីវកម្មគ្មានវត្ថុបញ្ចាំ 100%+។ សមាមាត្រដើមទុនត្រូវបានវាស់ធៀបនឹង RWA ដូច្នេះការឱ្យខ្ចីដែលមានហានិភ័យខ្ពស់ ស៊ីដើមទុនច្រើនជាងការឱ្យខ្ចីដែលមានសុវត្ថិភាព។","lens":"RWA គឺជារូបិយវត្ថុនៃដើមទុន — កន្លែងដែលអ្នកឱ្យខ្ចី កំណត់ថាអ្នកចាយដើមទុនអស់ប៉ុន្មាន។"},"54":{"concept":"សមាមាត្រដើមទុន (CET1)","explain":"CET1 គឺជាដើមទុនគុណភាពខ្ពស់បំផុត — សមធម៌ធម្មតា (common equity) — ចែកនឹង RWA ដែលជាសមាមាត្រសាធនភាព (solvency) ចម្បង។ អ្នកគ្រប់គ្រងបទប្បញ្ញត្តិទាមទារកម្រិតអប្បបរមាបូកនឹងខ្នើយបម្រុង ជាញឹកញាប់ 10%+។ Tier 1 និង Total capital បន្ថែមស្រទាប់ដែលមានគុណភាពទាបជាង។","lens":"CET1 គឺជាលេខតែមួយដែលអ្នកវិភាគ អ្នកគ្រប់គ្រងបទប្បញ្ញត្តិ និងទីភ្នាក់ងារវាយតម្លៃ ពិនិត្យមុនគេ។"},"55":{"concept":"សមាមាត្រអានុភាព (Leverage ratio)","explain":"ដើមទុន Tier 1 ÷ ការប៉ះពាល់សរុប ដោយមិនថ្លឹងតាមហានិភ័យ។ វាជាខ្នើយការពារ (backstop) ដល់សមាមាត្រ RWA ដែលមិនអាចលេងបាញ់តាមរយៈការថ្លឹងហានិភ័យអំណោយផល — វាកំណត់ព្រំដែនអានុភាពសរុប ដោយមិនគិតពីហានិភ័យដែលបានអះអាង។","lens":"សមាមាត្រអានុភាពគឺជាកម្រិតទាបបំផុតបែប 'ទោះជាអ្នកគិតថាមានសុវត្ថិភាពយ៉ាងណាក៏ដោយ'។"},"56":{"concept":"សមាមាត្រគ្របដណ្តប់សន្ទនីយភាព (LCR)","explain":"ទាមទារឱ្យមានទ្រព្យសកម្មសន្ទនីយភាពគុណភាពខ្ពស់គ្រប់គ្រាន់ ដើម្បីរស់រានក្នុងការហូរចេញ (outflow) ក្រោមភាពតានតឹងធ្ងន់ធ្ងររយៈពេល 30 ថ្ងៃ។ វាជាការឆ្លើយតបផ្ទាល់ចំពោះការរត់ដកប្រាក់ (funding runs) ក្នុងឆ្នាំ 2008 — ធនាគារត្រូវកាន់ខ្នើយសន្ទនីយភាព មិនត្រឹមតែដើមទុនប៉ុណ្ណោះទេ។","lens":"LCR គឺជាច្បាប់ដែលនិយាយថា៖ ត្រូវរស់រានក្នុងខែដំបូងដោយខ្លួនឯងទាំងស្រុង។"},"57":{"concept":"សមាមាត្រមូលនិធិមានស្ថេរភាពសុទ្ធ (NSFR)","explain":"ទាមទារឱ្យមានមូលនិធិមានស្ថេរភាព ដើម្បីគ្របដណ្តប់ទ្រព្យសកម្មរយៈពេលវែង (មួយឆ្នាំ) ដោយកាត់បន្ថយការពឹងផ្អែកខ្លាំងលើប្រាក់រយៈពេលខ្លីដែលងាយហូរ។ វាជាការបំពេញបន្ថែមផ្នែករចនាសម្ព័ន្ធ ដល់ LCR ដែលមានលក្ខណៈរយៈពេលខ្លី។","lens":"NSFR បង្ខំឱ្យ ការភ្នាល់ប្តូរកាលកំណត់ (maturity transformation) ត្រូវបានផ្តល់មូលនិធិដោយទំនួលខុសត្រូវ។"},"58":{"concept":"ខ្នើយបម្រុងដើមទុន (Capital buffers)","explain":"ដើមទុនបន្ថែមលើសពីកម្រិតអប្បបរមា៖ ខ្នើយអភិរក្ស (conservation buffer, បើកជានិច្ច), ខ្នើយប្រឆាំងវដ្ត (countercyclical buffer, បង្កើនក្នុងពេលរីកចម្រើន) និងកម្រៃបន្ថែម G-SIB សម្រាប់ធនាគារប្រព័ន្ធ។ ការបំពានលើពួកវាកម្រិតការចែកភាគលាភ និងប្រាក់រង្វាន់ មុនពេលក្ស័យធន។","lens":"ខ្នើយបម្រុងត្រូវបានរចនាឡើងដើម្បីប្រើក្នុងភាពតានតឹង — ការសន្សំទុកមិនប្រើ ធ្វើឱ្យបាត់បង់គោលបំណង។"},"59":{"concept":"ការធានារ៉ាប់រងប្រាក់បញ្ញើ","explain":"ការធានាពីរដ្ឋាភិបាលចំពោះប្រាក់បញ្ញើរហូតដល់កម្រិតកំណត់មួយ — $250k ដោយ FDIC, €100k នៅ EU។ វាបញ្ឈប់ការរត់ដកប្រាក់ធនាគារ (bank runs) ដ៏សមហេតុផល ដោយដកចេញនូវការលើកទឹកចិត្តឱ្យរត់ គឺជាឧបករណ៍ស្ថិរភាពហិរញ្ញវត្ថុថោកបំផុតដែលធ្លាប់បង្កើតឡើង។","lens":"ការធានារ៉ាប់រងទិញបានភាពស្ងប់ស្ងាត់ ព្រំដែនរបស់វាគឺជាកន្លែងដែលការរត់ដកប្រាក់នៅតែអាចចាប់ផ្តើម (មើលឆ្នាំ 2023)។"},"60":{"concept":"អ្នកឱ្យខ្ចីទីបំផុត (Lender of last resort)","explain":"ធនាគារកណ្តាលត្រៀមខ្លួនឱ្យខ្ចីដល់ធនាគារដែលមានសាធនភាព-តែខ្វះសន្ទនីយភាព ដោយប្តូរនឹងវត្ថុបញ្ចាំល្អ ដើម្បីបញ្ឈប់ការភ័យស្លន់ស្លោ មិនឱ្យក្លាយជាការដួលរលំ។ ច្បាប់របស់ Bagehot៖ ឱ្យខ្ចីដោយសេរី ក្នុងអត្រាពិន័យ ដោយប្តូរនឹងវត្ថុបញ្ចាំល្អ។","lens":"ខ្នើយការពារដែលធ្វើឱ្យប្រព័ន្ធធនាគារបម្រុងភាគ (fractional-reserve) អាចរស់រាន — និងងាយកើតបញ្ហាហានិភ័យសីលធម៌ (moral hazard)។"},"61":{"concept":"ការគ្រប់គ្រងទ្រព្យសកម្ម-បំណុល (ALM)","explain":"ALM គឺជាមុខងារកណ្តាលដែលផ្គូផ្គងកាលកំណត់ អត្រា និងរូបិយប័ណ្ណនៃទ្រព្យសកម្ម និងបំណុល ដើម្បីគ្រប់គ្រងហានិភ័យអត្រាការប្រាក់ និងសន្ទនីយភាព លើតារាងតុល្យការទាំងមូល។","lens":"ALM គឺជាកន្លែងដែលធនាគារសម្រេចថា គួរដំណើរការការភ្នាល់ ខ្ចីខ្លី/ឱ្យខ្ចីវែង ច្រើនប៉ុនណា។"},"62":{"concept":"សៀវភៅធនាគារ ធៀបនឹង សៀវភៅជួញដូរ","explain":"សៀវភៅធនាគារ (banking book) កាន់កម្ចី និងប្រាក់បញ្ញើរហូតដល់កាលកំណត់ ដោយកត់ត្រាតាមការបង្គរ (accrual)។ សៀវភៅជួញដូរ (trading book) កាន់ស្ថានភាពដើម្បីជួញដូរ ដោយកំណត់តម្លៃទីផ្សារ (mark-to-market) ប្រចាំថ្ងៃ។ ពួកវាមានហានិភ័យ ច្បាប់ដើមទុន និងគណនេយ្យខុសគ្នា។","lens":"សៀវភៅដែលទ្រព្យសកម្មស្ថិតនៅ ផ្លាស់ប្តូរដើមទុន គណនេយ្យ និងម្ចាស់ហានិភ័យរបស់វា។"},"63":{"concept":"ការកំណត់តម្លៃផ្ទេរមូលនិធិ (FTP)","explain":"'តម្លៃ' ផ្ទៃក្នុងដែលរតនាគារ (treasury) គិតលើអង្គភាពឱ្យខ្ចីសម្រាប់មូលនិធិ ហើយបង់ឱ្យអង្គភាពប្រមូលប្រាក់បញ្ញើសម្រាប់ការរៃប្រាក់។ វាបែងចែក spread ដោយយុត្តិធម៌ ហើយបង្ហាញថាតើអាជីវកម្មណាបង្កើតតម្លៃពិតប្រាកដ។","lens":"បើ FTP ខុស អ្នកនឹងផ្តល់រង្វាន់ដល់អាជីវកម្មខុស ហើយកំណត់តម្លៃខុសលើសៀវភៅទាំងមូល។"},"64":{"concept":"គម្លាតអត្រាការប្រាក់ និងអំឡុងពេល (Duration)","explain":"ការវិភាគគម្លាត (gap analysis) វាស់ភាពមិនត្រូវគ្នារវាងទ្រព្យសកម្ម និងបំណុលដែលកំណត់តម្លៃឡើងវិញក្នុងអំឡុងពេលមួយ អំឡុងពេល (duration) វាស់ភាពប្រែប្រួលនៃតម្លៃចំពោះការផ្លាស់ប្តូរអត្រា។ ទាំងពីរបរិមាណវាស់ថាការប៉ះទង្គិចអត្រា ប៉ះពាល់ដល់ចំណូល និងតម្លៃយ៉ាងណា។","lens":"គម្លាតធំដែលមិនបានការពារ (unhedged) គឺជាការភ្នាល់ដោយអានុភាព ថាអត្រានឹងទៅទិសណាបន្ទាប់។"},"65":{"concept":"ការការពារហានិភ័យដោយ Swaps","explain":"Swaps អត្រាការប្រាក់ អនុញ្ញាតឱ្យធនាគារបំប្លែងការប៉ះពាល់អត្រាថេរ ទៅជាអណ្តែត (ឬផ្ទុយមកវិញ) ដោយមិនប៉ះពាល់ដល់កម្ចីមូលដ្ឋាន ដោយកម្ចាត់ហានិភ័យអត្រាដោយថោក និងបត់បែន។","lens":"ឧបករណ៍និស្សន្ទ (derivatives) មិនមែនជាហានិភ័យទេ — ការមិនប្រើវាដើម្បីការពារហានិភ័យ ជាញឹកញាប់ទើបជាហានិភ័យ។"},"66":{"concept":"ការគ្រប់គ្រងសន្ទនីយភាព","explain":"ការកាន់ខ្នើយទ្រព្យសកម្មសន្ទនីយភាព និងមូលនិធិចម្រុះ ដើម្បីឱ្យធនាគារអាចបំពេញការហូរចេញក្នុងភាពតានតឹង ដោយមិនចាំបាច់លក់រ៉ាទ់ (fire sale)។ វាត្រូវបានគ្រប់គ្រងប្រចាំថ្ងៃ តាមរយៈការព្យាករលំហូរសាច់ប្រាក់ និងខ្នើយសន្ទនីយភាព។","lens":"សន្ទនីយភាពថោកក្នុងការកាន់ ប៉ុន្តែមានតម្លៃថ្លៃថ្លា ពេលទីផ្សារកក។"},"67":{"concept":"អត្រាគោលនយោបាយ និងការបញ្ជូន (Transmission)","explain":"ធនាគារកណ្តាលកំណត់អត្រាគោលនយោបាយ វាហូរឆ្លងកាត់ទីផ្សារប្រាក់ ចូលទៅក្នុងអត្រាប្រាក់បញ្ញើ និងកម្ចី ហើយដូច្នេះចូលទៅក្នុងរឹមចំណេញរបស់ធនាគារ និងសេដ្ឋកិច្ចទូលំទូលាយ។ ការបញ្ជូននេះគឺជាគោលនយោបាយរូបិយវត្ថុក្នុងសកម្មភាព។","lens":"ពេលធនាគារកណ្តាលផ្លាស់ប្តូរ រតនាគារសម្រេចថាបញ្ជូនបន្តប៉ុន្មានទៅអតិថិជន។"},"68":{"concept":"Repo និងទីផ្សារប្រាក់","explain":"ការខ្ចីមានវត្ថុបញ្ចាំរយៈពេលខ្លី ដែលមូលបត្រត្រូវបានលក់ ហើយទិញត្រឡប់វិញ — ជាបំពង់បង្ហូរ (plumbing) ដែលធនាគារប្រើដើម្បីផ្តល់មូលនិធិដល់ស្ថានភាព និងគ្រប់គ្រងសន្ទនីយភាពប្រចាំថ្ងៃ។ ការកកនៃទីផ្សារ repo គឺជាការជាប់គាំងទូទាំងប្រព័ន្ធ។","lens":"ទីផ្សារ repo មើលមិនឃើញ រហូតដល់វាឈប់ដំណើរការ — ពេលនោះវាក្លាយជារឿងទាំងមូល។"},"69":{"concept":"ការធ្វើផែនការដើមទុន (ICAAP)","explain":"ការវាយតម្លៃ ដោយផ្ទាល់របស់ធនាគារ ដែលមើលទៅមុខ និងឆ្លងកាត់ការធ្វើតេស្តភាពតានតឹង អំពីថាតើហានិភ័យរបស់ខ្លួនត្រូវការដើមទុនប៉ុន្មាន ដែលត្រូវបានពិនិត្យដោយអ្នកគ្រប់គ្រងបទប្បញ្ញត្តិ។ វាភ្ជាប់យុទ្ធសាស្ត្រ ហានិភ័យ និងដើមទុន ក្នុងដំណើរការតែមួយ។","lens":"ICAAP គឺជាកន្លែងដែល 'យើងអាចដំណើរការហានិភ័យបានប៉ុន្មាន' ជួបនឹង 'យើងមានដើមទុនប៉ុន្មាន'។"},"70":{"concept":"ការសងដើមទុនត្រឡប់ និងភាគលាភ","explain":"ការសម្រេចថាតើត្រូវរក្សាទុកចំណេញប៉ុន្មាន — ដើម្បីលូតលាស់ និងធ្វើខ្នើយ — ធៀបនឹងការសងត្រឡប់តាមរយៈភាគលាភ និងការទិញភាគហ៊ុនត្រឡប់ (buyback)។ អ្នកគ្រប់គ្រងបទប្បញ្ញត្តិអាចរារាំងការសងត្រឡប់ ពេលដើមទុន ឬលទ្ធផលតេស្តភាពតានតឹងខ្សោយ។","lens":"ការសងដើមទុនត្រឡប់បង្ហាញភាពរឹងមាំ ការត្រូវបង្ខំឱ្យកាត់បន្ថយវា ស្រែកបង្ហាញភាពខ្សោយ។"},"71":{"concept":"ការសម្រុះសម្រួល (Clearing) និងការទូទាត់ (Settlement)","explain":"Clearing គឺជាការឯកភាពថាអ្នកណាជំពាក់អ្វី ការទូទាត់ (settlement) គឺជាការផ្ទេរមូលនិធិពិតប្រាកដ។ ការទូទាត់ដែលអ្នក 'ផ្ញើ' ភ្លាមៗ អាចត្រូវ clear ក្នុងវិនាទី ប៉ុន្តែ settle ក្នុងម៉ោង ឬថ្ងៃក្រោយ។","lens":"រវាងការចុច និងការទូទាត់ មានហានិភ័យពិតប្រាកដ — និង float ពិតប្រាកដ។"},"72":{"concept":"ធនាគារឆ្លើយឆ្លង (Correspondent banking)","explain":"ធនាគារកាន់គណនីជាមួយគ្នា ដើម្បីផ្ទេរប្រាក់ឆ្លងព្រំដែន និងរូបិយប័ណ្ណ។ Nostro គឺជាគណនី 'របស់យើង' ដែលកាន់នៅឯគេ vostro គឺជាគណនី 'របស់អ្នក' ដែលកាន់នៅឯយើង។ វាជាឆ្អឹងខ្នងនៃការទូទាត់ឆ្លងព្រំដែន។","lens":"បណ្តាញនេះយឺត និងចំណាយថ្លៃ — គឺជាអ្វីដែល fintech និង stablecoins កំពុងតម្រង់ចាំវាយ។"},"73":{"concept":"កាត៖ ការចេញ ការទទួល និង Interchange","explain":"អ្នកចេញ (issuer) ផ្តល់កាតដល់អ្នកប្រើប្រាស់ អ្នកទទួល (acquirer) ចុះឈ្មោះឈ្មួញ interchange គឺជាកម្រៃដែលបណ្តាញកំណត់ ដែលហូរពី acquirer ទៅ issuer លើការរូតកាតម្តងៗ។ វាជាម៉ាស៊ីនរកលុយពហុភាគី។","lens":"Interchange គឺជាអាងចំណេញដ៏ស្ងាត់ ធំ និងត្រូវបានគ្រប់គ្រងបទប្បញ្ញត្តិយ៉ាងខ្លាំង។"},"74":{"concept":"ការទូទាត់ភ្លាមៗ / ពេលវេលាជាក់ស្តែង","explain":"ប្រព័ន្ធដូចជា FedNow, UPI និង SEPA Instant ធ្វើ clear និង settle ក្នុងវិនាទី ២៤/៧។ ពួកវាបង្ហាប់ float បង្កើនល្បឿនការក្លែងបន្លំ (fraud) និងបង្កសម្ពាធលើកម្រៃនៃផ្លូវទូទាត់បុរាណ (legacy rails)។","lens":"ការទូទាត់ពេលវេលាជាក់ស្តែងដកចេញ float — ខ្សែចំណូល និងបង្អួចហានិភ័យ បាត់ទៅជាមួយគ្នា។"},"75":{"concept":"SWIFT និងឆ្លងព្រំដែន","explain":"SWIFT គឺជាបណ្តាញផ្ញើសារ (messaging) ដែលធនាគារប្រើ ដើម្បីណែនាំការទូទាត់ឆ្លងព្រំដែន — វាផ្ទេរសារ មិនមែនប្រាក់។ យឺត មានស្រទាប់ច្រើន និងចំណាយថ្លៃ វាជាកកិត (friction) ដែល fintech និង CBDC តម្រង់ចាំដកចេញ។","lens":"SWIFT គឺជាការផ្ញើសារ មិនមែនប្រាក់ — ការបែងចែកនេះពន្យល់ពីការឈឺចាប់ភាគច្រើននៃការទូទាត់ឆ្លងព្រំដែន។"},"76":{"concept":"RTGS និងប្រាក់ធនាគារកណ្តាល","explain":"ប្រព័ន្ធទូទាត់សរុបពេលវេលាជាក់ស្តែង (RTGS) ទូទាត់ការទូទាត់ធំៗម្តងមួយ និងមិនអាចដកវិញបាន ជាប្រាក់ធនាគារកណ្តាល — ដែលជាទ្រព្យសកម្មទូទាត់គ្មានហានិភ័យ (risk-free) ចុងក្រោយបំផុត — ហើយបង្កើតជាស្នូលនៃប្រព័ន្ធទូទាត់ជាតិ។","lens":"ប្រាក់ធនាគារកណ្តាលគឺជាការទូទាត់ចុងក្រោយ (final) តែមួយគត់ពិតប្រាកដ — អ្វីៗឯទៀតគ្រាន់តែជាការសន្យា។"},"77":{"concept":"AML, KYC និងការក្លែងបន្លំ","explain":"ច្បាប់ ស្គាល់អតិថិជនរបស់អ្នក (KYC) និងប្រឆាំងការសម្អាតប្រាក់ (AML) ទាមទារឱ្យធនាគារផ្ទៀងផ្ទាត់អត្តសញ្ញាណ និងតាមដានលំហូរខុសច្បាប់។ ការបរាជ័យនាំមកនូវការពិន័យដ៏ធំ និងការខូចខាតកេរ្តិ៍ឈ្មោះ។","lens":"ការអនុលោមភាព (compliance) មិនមែនជាចំណាយបន្ថែមទេ — ការបរាជ័យ AML មួយ អាចធ្វើឱ្យខាតរាប់ពាន់លាន និងអាជ្ញាបណ្ណធនាគារ។"},"78":{"concept":"ការផ្ទៀងផ្ទាត់សម្រុង (Reconciliation) និងផ្នែកខាងក្រោយ","explain":"ការងារ ដែលមិនទាក់ទាញ នៃការផ្គូផ្គងកំណត់ត្រា ដើម្បីឱ្យរាល់ប្រតិបត្តិការមានតុល្យភាព។ ភាពមិនចុះសម្រុង (break) នៅទីនេះ បង្ហាញពីការក្លែងបន្លំ កំហុស ឬការខាតបង់ ប្រតិបត្តិការរឹងមាំគឺជាគុណសម្បត្តិប្រកួតប្រជែងពិតប្រាកដ។","lens":"ភាពល្អឥតខ្ចោះនៃប្រតិបត្តិការ កម្រឡើងក្បាលទំព័រព័ត៌មាន ប៉ុន្តែការពារការខាតបង់ជានិច្ច។"},"79":{"concept":"Float និងហានិភ័យទូទាត់","explain":"Float គឺជាប្រាក់ ក្នុងដំណើរផ្ទេរ ដែលភាគីទាំងពីរមិនអាចប្រើ ហានិភ័យទូទាត់ (Herstatt risk) គឺភាគីម្ខាងបានបង់ ហើយម្ខាងទៀតបរាជ័យ មុនពេលបញ្ចប់។ គម្លាតពេលវេលា គឺជាប្រភពប្រវត្តិសាស្ត្រពិតប្រាកដនៃការខាតបង់។","lens":"គម្លាតរវាងការបង់ និងការទទួល គឺជាកន្លែងដែលការបរាជ័យរបស់ដៃគូ ក្លាយជាការខាតបង់របស់អ្នក។"},"80":{"concept":"សមាមាត្រចំណាយ-ទៅ-ចំណូល (Cost-to-income)","explain":"ចំណាយប្រតិបត្តិការ ÷ ចំណូល — គោលដៅប្រៀបធៀបប្រសិទ្ធភាព។ ក្រោម ~50% គឺរឹងមាំ លើស ~65% បង្ហាញភាពរីកធាត់ (bloat)។ វាជាឧបករណ៍ដែលបច្ចេកវិទ្យា និងទំហំ (scale) ចាប់ផ្លាស់ប្តូរដោយផ្ទាល់បំផុត។","lens":"Cost-to-income គឺជាមាត្រដ្ឋានដែលអ្នកសកម្មនិយម (activist) និងក្រុមប្រឹក្សា ប្រើដើម្បីវិនិច្ឆ័យការគ្រប់គ្រងរបស់អ្នកគ្រប់គ្រង។"},"81":{"concept":"ធនាគារវិនិយោគ ធៀបនឹង ធនាគារពាណិជ្ជ","explain":"ធនាគារពាណិជ្ជ (commercial) ទទួលប្រាក់បញ្ញើ និងឱ្យខ្ចី ធនាគារវិនិយោគ (investment) ផ្តល់ប្រឹក្សា ធានាការចេញលក់ (underwrite) និងជួញដូរ សម្រាប់សាជីវកម្ម និងស្ថាប័ន។ ធនាគារសកល (universal) ធ្វើទាំងពីរក្រោមដំបូលតែមួយ ដោយមានជញ្ជាំងខណ្ឌចែករវាងពួកវា។","lens":"ទាំងពីរលាយស្ថេរភាពមូលនិធិ ជាមួយកម្រៃចំណេញខ្ពស់ — ហើយក៏លាយហានិភ័យរបស់ពួកវាផងដែរ។"},"82":{"concept":"ទីផ្សារមូលធន៖ បំណុល និងសមធម៌","explain":"ជំនួសឱ្យការឱ្យខ្ចី ធនាគារជួយអតិថិជនរៃប្រាក់ដោយផ្ទាល់ពីវិនិយោគិន — ដោយចេញមូលបត្របំណុល (bonds) ឬភាគហ៊ុន (equity, IPO)។ ធនាគាររកកម្រៃ ខណៈពេលដែលទទួលហានិភ័យតារាងតុល្យការតិចតួច។","lens":"កម្រៃទីផ្សារមូលធនត្រូវបានស្រឡាញ់៖ រឹមខ្ពស់ ស៊ីដើមទុនតិច (capital-light) និងតាមវដ្ត (cyclical)។"},"83":{"concept":"ការធ្វើមូលបត្រូបនីយកម្ម (Securitization)","explain":"ការប្រមូលកម្ចី — កម្ចីទិញផ្ទះ កាត កម្ចីរថយន្ត — ហើយលក់ជាមូលបត្រអាចជួញដូរបាន ដោយផ្ទេរហានិភ័យចេញពីតារាងតុល្យការ ហើយរំដោះដើមទុនឱ្យខ្ចីម្តងទៀត។ បើប្រើខុស វានឹងជំរុញវិបត្តិឆ្នាំ 2008។","lens":"ឧបករណ៍ដើមទុនដ៏មានឥទ្ធិពល ដែលក្លាយជាអាវុធ ពេលគុណភាពមូលដ្ឋានត្រូវបានលាក់។"},"84":{"concept":"ការគ្រប់គ្រងទ្រព្យស្តុក និងទ្រព្យសកម្ម","explain":"ការគ្រប់គ្រងប្រាក់សម្រាប់បុគ្គល (wealth) និងស្ថាប័ន (asset management) ដើម្បីទទួលកម្រៃដដែលៗ។ ស៊ីដើមទុនតិច ស្អិត (sticky) និងអាចពង្រីកបាន (scalable) — ជាផ្នែកដែលធនាគារចង់បានបំផុត។","lens":"កម្រៃផ្អែកលើ AUM គឺជាប្រាក់ចំណូលឆ្នាំៗ (annuity) ដែល CEO ធនាគារគ្រប់រូបចង់បានបន្ថែម។"},"85":{"concept":"ហិរញ្ញប្បទានពាណិជ្ជកម្ម (Trade finance)","explain":"ការផ្តល់ហិរញ្ញប្បទាន និងកាត់បន្ថយហានិភ័យពាណិជ្ជកម្មសកល — លិខិតឥណទាន (letters of credit) ការធានា ហិរញ្ញប្បទានខ្សែសង្វាក់ផ្គត់ផ្គង់ — ដើម្បីឱ្យអ្នកនាំចេញ និងអ្នកនាំចូល អាចទុកចិត្តគ្នា។ ចាស់ ចាំបាច់ និងសម្បូរកម្រៃ។","lens":"Trade finance ធ្វើឱ្យពាណិជ្ជកម្មសកលរលូន ហើយចងអតិថិជនជាមួយអាជីវកម្មស្អិត និងខាតបង់ទាប។"},"86":{"concept":"សេវារតនាគារ និង FX","explain":"ការជួយអតិថិជនគ្រប់គ្រងរូបិយប័ណ្ណ អត្រា និងសន្ទនីយភាព — ការប្តូរ FX ការការពារហានិភ័យ (hedging) ការគ្រប់គ្រងសាច់ប្រាក់។ វាជាចំណូលបរិមាណច្រើន ដដែលៗ និងចងទំនាក់ទំនង (relationship-anchoring)។","lens":"សេវាទាំងនេះជ្រៅទំនាក់ទំនងអតិថិជន និងបញ្ចេញកម្រៃ ស្ថិរ និងហានិភ័យទាប។"},"87":{"concept":"មូលដ្ឋានឧបករណ៍និស្សន្ទ (Derivatives)","explain":"កិច្ចសន្យាដែលតម្លៃរបស់វា កើតចេញ (derive) ពីទ្រព្យមូលដ្ឋាន — អត្រា FX ទំនិញ សមធម៌។ Forwards ចាក់សោតម្លៃ options ផ្តល់សិទ្ធិ swaps ប្តូរលំហូរសាច់ប្រាក់។ ជាឧបករណ៍ដើម្បីការពារហានិភ័យ ឬដើម្បីធ្វើការប៉ាន់ស្មាន (speculate)។","lens":"ឧបករណ៍និស្សន្ទផ្ទេរហានិភ័យ — គ្រោះថ្នាក់គឺមិនដឹងថាអ្នកណាកាន់វាចុងក្រោយ។"},"88":{"concept":"ការជួញដូរ និងការធ្វើទីផ្សារ (Market-making)","explain":"ធនាគារដាក់តម្លៃទិញ និងលក់ ដោយរកកម្រៃ bid-ask spread និងផ្តល់សន្ទនីយភាព។ វាមានចំណេញ ប៉ុន្តែប្រែប្រួល និងស៊ីដើមទុនច្រើន ច្បាប់ក្រោយឆ្នាំ 2008 កម្រិតការទទួលហានិភ័យផ្ទាល់ខ្លួន (proprietary)។","lens":"ចំណូលពីការជួញដូរតុបតែងឆ្នាំល្អៗ ហើយអាចផ្ទុះឆ្នាំអាក្រក់ៗ។"},"89":{"concept":"ធនាគារសកល ធៀបនឹង ធនាគារឯកទេស","explain":"ធនាគារសកល (universal) គ្របដណ្តប់ លក់រាយ សាជីវកម្ម វិនិយោគ និងទីផ្សារ ធនាគារឯកទេស (specialist) ផ្តោត — អ្នកចេញកាត ធនាគារឯកជន។ ទំហំទូលាយធ្វើពិពិធកម្មចំណូល ប៉ុន្តែបន្ថែមភាពស្មុគស្មាញ និងហានិភ័យប្រព័ន្ធ។","lens":"ពិពិធកម្ម ធៀបនឹង ការផ្តោត គឺជាការជជែកយុទ្ធសាស្ត្រ និងការវាយតម្លៃ ដ៏អចិន្ត្រៃយ៍។"},"90":{"concept":"ពិពិធកម្មចំណូលកម្រៃ","explain":"ការបែងចែកចំណូល ឆ្លងកាត់ការឱ្យខ្ចី និងខ្សែកម្រៃច្រើន ដើម្បីឱ្យចំណេញអាចរស់រានពីការប៉ះទង្គិចតែមួយ ឬវដ្តអត្រាណាមួយ។ វិនិយោគិនបង់ថ្លៃខ្ពស់ជាង សម្រាប់ចំណូលដដែលៗ និងពិពិធកម្ម។","lens":"ទីផ្សារផ្តល់រង្វាន់ដល់ចំណូលកម្រៃដែលមានស្ថេរភាព ដោយពហុគុណ (multiple) ខ្ពស់ជាងចំណូល spread ដែលប្រែប្រួល។"},"91":{"concept":"អ្វីជំរុញការវាយតម្លៃធនាគារ","explain":"ធនាគារជួញដូរតាមតម្លៃ-ទៅ-សៀវភៅ (price-to-book) — ភ្ជាប់នឹង ROE ធៀបនឹងតម្លៃដើមទុនសមធម៌ (cost of equity) — ច្រើនជាង P/E។ បើ ROE លើសពី COE ភាគហ៊ុនជួញដូរលើសពីតម្លៃសៀវភៅ បើមិនដូច្នេះទេ ក្រោមតម្លៃសៀវភៅ។ ការលូតលាស់ ហានិភ័យ និងចំណេញ កំណត់ពហុគុណ។","lens":"រឿងសមធម៌ទាំងមូលសង្ខេបទៅជា៖ តើ ROE របស់អ្នកឈ្នះតម្លៃដើមទុនសមធម៌ (cost of equity) ឬទេ?"},"92":{"concept":"តម្លៃដើមទុនសមធម៌ និងច្បាប់ ROE > COE","explain":"តម្លៃដើមទុនសមធម៌ (cost of equity) គឺជាចំណេញដែលម្ចាស់ភាគហ៊ុនទាមទារ សម្រាប់ហានិភ័យដែលពួកគេទទួល។ ធនាគារបង្កើតតម្លៃ លុះត្រាតែ ROE លើសពី COE ការរកបានក្រោមវា បំផ្លាញតម្លៃ ទោះបីរាយការណ៍ចំណេញ។","lens":"'មានចំណេញ' និង 'បំផ្លាញតម្លៃ' មិនមែនជាការផ្ទុយគ្នាទេ — ធនាគារអាចជាទាំងពីរ ក្នុងពេលតែមួយ។"},"93":{"concept":"ចំណេញសេដ្ឋកិច្ច / EVA","explain":"ចំណេញ បន្ទាប់ពីគិតថ្លៃ លើដើមទុនទាំងអស់ដែលបានប្រើ រួមទាំងសមធម៌តាមតម្លៃរបស់វា។ វាបង្ហាញថាតើអាជីវកម្មពិតជាបន្ថែមតម្លៃ ឬគ្រាន់តែស៊ីដើមទុនថ្លៃដើម្បីមើលទៅរវល់។","lens":"ចំណេញគណនេយ្យតុបតែងខាងក្រៅ ចំណេញសេដ្ឋកិច្ច (EVA) ប្រាប់ការពិតអំពីតម្លៃ។"},"94":{"concept":"ឧបករណ៍ប្រសិទ្ធភាព","explain":"ការកាត់បន្ថយ cost-to-income — តាមរយៈស្វ័យប្រវត្តិកម្ម ទំហំ (scale) និងភាពសាមញ្ញ — ហូរស្ទើរតែផ្ទាល់ទៅបន្ទាត់ចុងក្រោយ (bottom line) និង ROE។ វាជាឧបករណ៍តម្លៃ ដែលអាចគ្រប់គ្រងបានបំផុត ដែលការគ្រប់គ្រងកាន់កាប់។","lens":"ពេលចំណូលពិបាកលូតលាស់ ប្រសិទ្ធភាពគឺជាឧបករណ៍ដែល CEO ពិតជាអាចទាញបាន។"},"95":{"concept":"ការរំខានពី ឌីជីថល និង Fintech","explain":"Fintech និងក្រុមហ៊ុនបច្ចេកវិទ្យាធំៗ វាយប្រហារ ចំណិតដែលមានចំណេញ ស៊ីដើមទុនតិច — ការទូទាត់ ការឱ្យខ្ចី ការប្រឹក្សា — ដោយ UX ល្អជាង និងចំណាយទាបជាង ដោយបំបែក (unbundle) ធនាគារ។ ធនាគារចាស់ការពារខ្លួនដោយ ការទុកចិត្ត ទំហំ ប្រាក់បញ្ញើ និងអាជ្ញាបណ្ណ។","lens":"ការគំរាមកំហែងមិនមែនជាគូប្រជែងតែមួយទេ — វាជាមុខ របួសមួយពាន់ ដល់រឹមចំណេញល្អបំផុតរបស់អ្នក។"},"96":{"concept":"សេដ្ឋកិច្ចឯកតាអតិថិជន","explain":"តម្លៃក្នុងមួយអតិថិជន = តម្លៃពេញមួយជីវិត (lifetime value: ផលិតផល × រឹម × រយៈពេលនៅជាមួយ) ដកនឹងចំណាយទិញ (acquisition cost)។ ការលក់បន្ថែម (cross-sell) និងការរក្សា (retention) មិនត្រឹមតែការទិញ ជំរុញចំណេញពិតប្រាកដ។","lens":"សង្គ្រាមឈ្នះលើ cross-sell និង retention មិនមែនលើលេខទិញអតិថិជនដ៏ភ្លឺថ្លាទេ។"},"97":{"concept":"ហានិភ័យបទប្បញ្ញត្តិ និងកេរ្តិ៍ឈ្មោះ","explain":"លើសពីហានិភ័យហិរញ្ញវត្ថុ ការពិន័យ ការបាត់អាជ្ញាបណ្ណ និងការខូចខាតកេរ្តិ៍ឈ្មោះ អាចធំជាងការខាតកម្ចីតែមួយឆ្ងាយ។ ក្នុងអាជីវកម្មនៃការទុកចិត្ត កេរ្តិ៍ឈ្មោះគឺជាដើមទុន — ហើយវាបង្គរទៅទាំងពីរទិស។","lens":"ក្នុងវិស័យធនាគារ ការទុកចិត្តគឺជាតារាងតុល្យការ ដែលអ្នកមិនអាចកសាងឡើងវិញមួយយប់បានទេ។"},"98":{"concept":"ដើមទុនជាធនធានកម្រ","explain":"ដើមទុនកំណត់ថាធនាគារអាចឱ្យខ្ចី និងលូតលាស់បានប៉ុន្មាន ដូច្នេះការបែងចែកវាទៅចំណេញថ្លឹងតាមហានិភ័យខ្ពស់បំផុត គឺជាសកម្មភាពយុទ្ធសាស្ត្រស្នូល។ រាល់អាជីវកម្មប្រកួតប្រជែងសម្រាប់ដើមទុនកម្រតែមួយ។","lens":"ការងារពិតរបស់ CEO គឺការសម្រេចថា ដើមទុនឯកតានីមួយៗ រកបានច្រើនបំផុតនៅកន្លែងណា។"},"99":{"concept":"ការដោះដូរ ការលូតលាស់ / ហានិភ័យ / ចំណេញ","explain":"អ្នកអាចដេញតាមការលូតលាស់ សុវត្ថិភាព ឬចំណេញ — កម្រនឹងទាំងបីក្នុងពេលតែមួយ។ ការលូតលាស់លឿន ជាញឹកញាប់មានន័យថាបន្ធូរឥណទាន ចំណេញខ្ពស់ ជាញឹកញាប់មានន័យថាហានិភ័យច្រើន។ ការគ្រប់គ្រងភាពតានតឹងនោះ គឺជាយុទ្ធសាស្ត្រ។","lens":"ចូរប្រយ័ត្នចំពោះធនាគារដែលលូតលាស់លឿនបំផុត — ជាធម្មតាមាននរណាម្នាក់កំពុងកំណត់តម្លៃហានិភ័យទាបពេក ដើម្បីធ្វើវា។"},"100":{"concept":"តារាងពិន្ទុ CEO","explain":"មាត្រដ្ឋានដែលពិតជាវិនិច្ឆ័យ CEO ធនាគារ៖ ROE ធៀបនឹង COE, ដើមទុន CET1, cost-to-income, NIM, គុណភាពទ្រព្យសកម្ម និងចំណេញសរុបរបស់ម្ចាស់ភាគហ៊ុន (total shareholder return) — ទាំងអស់ថ្លឹងធៀបនឹងហានិភ័យ។ អ្វីៗទាំងអស់ឡើងទៅដល់ចំណុចទាំងនេះ។","lens":"ដំណើរការធនាគារតាមលេខទាំងនេះ ហើយតម្លៃភាគហ៊ុននឹងតាមមក ដេញតាមតែតម្លៃភាគហ៊ុនតែឯង នោះពួកវានឹងក្បត់អ្នក។"}}}};
+
+  const LANGS = ["en", "ru", "km"];
+  let lang = "en";
+  try { const l = localStorage.getItem("ledger.lang"); if (l && LANGS.includes(l)) lang = l; } catch (e) {}
+
+  const uiText = (k) => (lang !== "en" && I18N[lang] && I18N[lang].ui && I18N[lang].ui[k]) || UI_EN[k];
+  const modLabel = (cat) => (lang !== "en" && I18N[lang] && I18N[lang].modules && I18N[lang].modules[cat]) || cat;
+  const tr = (c) => {
+    if (lang !== "en" && I18N[lang] && I18N[lang].cards && I18N[lang].cards[c.n]) {
+      const t = I18N[lang].cards[c.n];
+      return { concept: t.concept || c.concept, explain: t.explain || c.explain, lens: t.lens || c.lens };
+    }
+    return { concept: c.concept, explain: c.explain, lens: c.lens };
+  };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  /* ===================== STATE ===================== */
+  const $ = (id) => document.getElementById(id);
+  const cardEl = $("card");
+  const innerEl = cardEl.querySelector(".card-inner");
+
+  let activeCat = "All";
+  let order = CARDS.map((c) => c.n);   // list of card numbers in current sequence
+  let pos = 0;
+  let flipped = false;
+  const mastered = new Set();
+
+  // restore mastered set if storage available
+  try {
+    const saved = JSON.parse(localStorage.getItem("ledger.mastered") || "[]");
+    if (Array.isArray(saved)) saved.forEach((n) => mastered.add(n));
+  } catch (e) { /* storage blocked — session only */ }
+
+  const persist = () => {
+    try { localStorage.setItem("ledger.mastered", JSON.stringify([...mastered])); }
+    catch (e) { /* ignore */ }
+  };
+
+  const pad = (n) => String(n).padStart(3, "0");
+  const currentCard = () => CARDS[order[pos] - 1];
+
+  /* ===================== FILTERS ===================== */
+  const cats = ["All", ...CARDS.reduce((a, c) => (a.includes(c.cat) ? a : a.concat(c.cat)), [])];
+  const filtersEl = $("filters");
+  cats.forEach((cat) => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.dataset.cat = cat;
+    b.setAttribute("aria-pressed", cat === "All" ? "true" : "false");
+    const count = cat === "All" ? CARDS.length : CARDS.filter((c) => c.cat === cat).length;
+    const lbl = document.createElement("span");
+    lbl.className = "c-lbl";
+    lbl.textContent = cat === "All" ? uiText("all") : modLabel(cat);
+    const num = document.createElement("span");
+    num.className = "c-num";
+    num.textContent = count;
+    b.append(lbl, num);
+    b.addEventListener("click", () => setCategory(cat));
+    filtersEl.appendChild(b);
+  });
+
+  function setCategory(cat) {
+    activeCat = cat;
+    [...filtersEl.children].forEach((ch, i) =>
+      ch.setAttribute("aria-pressed", cats[i] === cat ? "true" : "false")
+    );
+    order = (cat === "All" ? CARDS : CARDS.filter((c) => c.cat === cat)).map((c) => c.n);
+    pos = 0;
+    flipped = false;
+    render(true);
+  }
+
+  /* ===================== RENDER ===================== */
+  function render(animate) {
+    const c = currentCard();
+
+    // flip state
+    cardEl.classList.toggle("flipped", flipped);
+
+    const t = tr(c);
+    const catLbl = modLabel(c.cat);
+
+    // front
+    $("f-serial").textContent = pad(c.n);
+    $("f-cat").textContent = catLbl;
+    $("f-kicker").textContent = catLbl;
+    $("f-bign").textContent = String(c.n).padStart(2, "0");
+    $("f-concept").textContent = t.concept;
+
+    // back
+    $("b-serial").textContent = pad(c.n);
+    $("b-cat").textContent = catLbl;
+    $("b-title").textContent = t.concept;
+    $("b-explain").textContent = t.explain;
+    $("b-lens").textContent = t.lens;
+
+    // mastered
+    const isMastered = mastered.has(c.n);
+    cardEl.classList.toggle("known", isMastered);
+    const markBtn = $("mark");
+    markBtn.setAttribute("aria-pressed", isMastered ? "true" : "false");
+
+    // stats
+    $("pos").textContent = pos + 1;
+    $("deck-total").textContent = order.length;
+    $("known-count").textContent = mastered.size;
+    $("progress-bar").style.width = (order.length ? ((pos + 1) / order.length) * 100 : 0) + "%";
+
+    if (animate) {
+      cardEl.style.animation = "none";
+      // force reflow to restart the enter animation
+      void cardEl.offsetWidth;
+      cardEl.style.animation = "";
+    }
+  }
+
+  /* ===================== ACTIONS ===================== */
+  function flip() { flipped = !flipped; cardEl.classList.toggle("flipped", flipped); }
+
+  function go(delta) {
+    const len = order.length;
+    pos = (pos + delta + len) % len;
+    flipped = false;
+    render(true);
+  }
+
+  function toggleMaster() {
+    const c = currentCard();
+    if (mastered.has(c.n)) mastered.delete(c.n);
+    else mastered.add(c.n);
+    persist();
+    render(false);
+  }
+
+  // deterministic-enough shuffle without Math.random dependency issues (Fisher–Yates w/ seeded LCG)
+  let seed = 0x2545f491;
+  function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+  function shuffle() {
+    seed = (seed ^ (order.length * 2654435761 + pos * 40503 + Date.parse("2020-01-01"))) & 0x7fffffff;
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    pos = 0;
+    flipped = false;
+    render(true);
+  }
+
+  $("prev").addEventListener("click", () => go(-1));
+  $("next").addEventListener("click", () => go(1));
+  $("flip").addEventListener("click", flip);
+  $("mark").addEventListener("click", toggleMaster);
+  $("shuffle").addEventListener("click", shuffle);
+  cardEl.addEventListener("click", flip);
+  cardEl.addEventListener("keydown", (e) => {
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); }
+  });
+
+  /* ===================== LANGUAGE ===================== */
+  function applyLang(l) {
+    lang = LANGS.includes(l) ? l : "en";
+    try { localStorage.setItem("ledger.lang", lang); } catch (e) {}
+
+    const root = document.documentElement;
+    root.setAttribute("data-lang", lang);
+    root.setAttribute("lang", lang);
+
+    [...document.querySelectorAll("#lang-switch .lang")].forEach((b) =>
+      b.setAttribute("aria-pressed", b.dataset.lang === lang ? "true" : "false"));
+
+    // tagline (two parts + separator)
+    const tg = $("tagline");
+    tg.textContent = "";
+    tg.append(document.createTextNode(uiText("tagline1")));
+    const rule = document.createElement("span");
+    rule.className = "rule"; rule.textContent = "/";
+    tg.append(rule, document.createTextNode(uiText("tagline2")));
+
+    // static labels
+    $("lbl-card").textContent = uiText("cardLabel");
+    $("lbl-known").textContent = uiText("masteredLabel");
+    $("flip-hint-txt").textContent = uiText("reveal");
+    $("known-flag-txt").textContent = uiText("masteredFlag");
+    $("lens-lbl").textContent = uiText("lensLabel");
+    $("txt-flip").textContent = uiText("flip");
+    $("txt-master").textContent = uiText("master");
+    $("txt-shuffle").textContent = uiText("shuffle");
+
+    // aria labels
+    cardEl.setAttribute("aria-label", uiText("cardAria"));
+    $("prev").setAttribute("aria-label", uiText("prevAria"));
+    $("next").setAttribute("aria-label", uiText("nextAria"));
+    $("flip").setAttribute("aria-label", uiText("flipAria"));
+    $("mark").setAttribute("aria-label", uiText("markAria"));
+    $("shuffle").setAttribute("aria-label", uiText("shuffleAria"));
+
+    // keyboard help
+    $("kbd-help").innerHTML =
+      "<kbd>&larr;</kbd> <kbd>&rarr;</kbd> " + esc(uiText("kbNav")) +
+      " &middot; <kbd>Space</kbd> " + esc(uiText("kbFlip")) +
+      " &middot; <kbd>K</kbd> " + esc(uiText("kbMaster")) +
+      " &middot; <kbd>S</kbd> " + esc(uiText("kbShuffle"));
+
+    // chip labels
+    [...filtersEl.children].forEach((ch) => {
+      const cat = ch.dataset.cat;
+      const lbl = ch.querySelector(".c-lbl");
+      if (lbl) lbl.textContent = cat === "All" ? uiText("all") : modLabel(cat);
+    });
+
+    render(false);
+  }
+
+  [...document.querySelectorAll("#lang-switch .lang")].forEach((b) =>
+    b.addEventListener("click", () => applyLang(b.dataset.lang)));
+
+  document.addEventListener("keydown", (e) => {
+    if (e.target.classList && e.target.classList.contains("chip")) return;
+    switch (e.key) {
+      case "ArrowLeft":  e.preventDefault(); go(-1); break;
+      case "ArrowRight": e.preventDefault(); go(1); break;
+      case " ":
+        if (e.target === cardEl) return; // handled above
+        e.preventDefault(); flip(); break;
+      case "k": case "K": toggleMaster(); break;
+      case "s": case "S": shuffle(); break;
+    }
+  });
+
+  /* ===================== GUILLOCHÉ ENGRAVING ===================== */
+  const canvas = $("guilloche");
+  const ctx = canvas.getContext("2d");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let phase = 0, W = 0, H = 0, dpr = 1;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const r = canvas.getBoundingClientRect();
+    W = r.width; H = r.height;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function inkColor(alpha) {
+    const c = getComputedStyle(document.documentElement).getPropertyValue("--guilloche").trim() || "24,90,72";
+    return "rgba(" + c + "," + alpha + ")";
+  }
+
+  // draw a hypotrochoid rosette — the classic banknote guilloché
+  function rosette(cx, cy, R, r, d, turns, ink) {
+    ctx.beginPath();
+    const steps = 900;
+    const k = (R - r) / r;
+    for (let i = 0; i <= steps; i++) {
+      const t = (i / steps) * Math.PI * 2 * turns;
+      const x = cx + (R - r) * Math.cos(t) + d * Math.cos(k * t + phase);
+      const y = cy + (R - r) * Math.sin(t) - d * Math.sin(k * t + phase);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = 0.6;
+    ctx.stroke();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const cx = W / 2, cy = H / 2;
+    const base = Math.min(W, H);
+    const R = base * 0.42;
+    // layered rosettes for a woven engraving feel
+    rosette(cx, cy, R, R * 0.28, R * 0.34, 7, inkColor(0.16));
+    rosette(cx, cy, R * 0.82, R * 0.22, R * 0.30, 9, inkColor(0.12));
+    rosette(cx, cy, R * 0.62, R * 0.18, R * 0.24, 11, inkColor(0.10));
+    // faint concentric guides
+    ctx.strokeStyle = inkColor(0.06);
+    ctx.lineWidth = 0.5;
+    for (let i = 1; i <= 3; i++) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * (0.5 + i * 0.16), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  function loop() {
+    phase += 0.0016;
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener("resize", () => { resize(); draw(); });
+
+  /* ===================== INIT ===================== */
+  resize();
+  applyLang(lang);
+  if (reduce) draw(); else loop();
+
+  // redraw guilloché when the viewer flips theme (data-theme mutation)
+  new MutationObserver(() => { if (reduce) draw(); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>
+</body>
+</html>
