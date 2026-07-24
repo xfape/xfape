@@ -6,6 +6,11 @@ a full deep-dive article** in 3D; pages turn in space as you move through them.
 It runs as a single HTML file with no build step, no dependencies, and no
 network calls — just open `index.html`.
 
+**Design:** a mix of Emil Kowalski's restraint (clean geometric sans, precise
+spacing, soft spring motion) and the world of *TRON* — a dark neon stage, a
+luminescent perspective grid, glowing card edges, and cyan/orange accents. It
+ships in two themes: the neon-dark TRON stage and a light "blueprint" variant.
+
 ## The curriculum
 
 100 cards arranged as a learning path across 10 modules, starting from *how
@@ -50,8 +55,8 @@ The chosen language and your "mastered" progress persist in the browser via
   collapses back, with a depth (dive-in) transition
 - **3D page-turn navigation** — articles and cards rotate through space as you
   move next/previous
-- Pointer parallax tilt on the concept card; a live guilloché (banknote-engraving)
-  canvas backdrop
+- Pointer parallax tilt on the concept card; a live animated TRON perspective
+  grid rendered on canvas, with a glowing horizon
 - Filter by module, shuffle the deck, and mark cards as mastered
 - Full keyboard control — `←`/`→` navigate, `Space` open/close, `Esc` close,
   `K` master, `S` shuffle
